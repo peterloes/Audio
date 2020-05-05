@@ -1,7 +1,7 @@
 ﻿# Audio
  designed with MOMO
 
-Application for Animal Manipulation
+Platform for Animal Observation and Manipulation
 
 Supported:
 - FN-RM01 MP3/WAV Audio Recorder and Player Module (Website: www.flyrontech.com)
