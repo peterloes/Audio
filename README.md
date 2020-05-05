@@ -18,7 +18,7 @@ An efficient application to monitor and control animal behaviour in wildlife
 as well as in laboratory settings
 
 -	Targeted manipulation of 1000 and more individuals
-- Random Playback Audio files over time
+- Random Playback Audio files T001 up to T005 over time
 - Record Audio files R001 up to R999 over time
 - Combined Audio Playback and Record over time
 -	Low power consumption and specific data collection lead to long lasting collection periods
