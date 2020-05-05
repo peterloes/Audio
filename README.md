@@ -7,7 +7,7 @@ Supported:
 - FN-RM01 MP3/WAV Audio Recorder and Player Module (Website: www.flyrontech.com)
 
 
-The Audio is used for audio playback and audio record of the bird.  It is switched ON or
+The Audio is used to playback and record sounds of the animals. It is switched ON or
 OFF together with the RFID_Reader. Audio uses the Audio Module FN-RM01
 which handles automatic playback and record files. Audio is
 powered by one of the Power_Outputs, usually UA2. Use variable
