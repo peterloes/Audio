@@ -1,0 +1,50 @@
+Stückliste exportiert am 05.05.2020 13:51
+
+Part  Value                         Device                  Package                Description                                           
+C1    10n                           C-EUC0603               C0603                  CAPACITOR, European symbol                            
+C2    10n                           C-EUC0603               C0603                  CAPACITOR, European symbol                            
+C3    10n                           C-EUC0603               C0603                  CAPACITOR, European symbol                            
+C4    10n                           C-EUC0603               C0603                  CAPACITOR, European symbol                            
+C5    10n                           C-EUC0603               C0603                  CAPACITOR, European symbol                            
+JP1   Buchsenleisten(Conrad 741360) PINHD-1X12              1X12                   PIN HEADER                                            
+JP2   Buchsenleisten(Conrad 741360) PINHD-1X12              1X12                   PIN HEADER                                            
+LED1  SML-H12U8TT86                 LEDCHIPLED_0805         CHIPLED_0805           LED                                                   
+LED2  SML-H12Y8TT86                 LEDCHIPLED_0805         CHIPLED_0805           LED                                                   
+LSP1  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP2  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP3  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP4  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP5  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP6  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP7  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP8  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP9  LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP10 LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+LSP11 LSP10                         LSP10                   LSP10                  SOLDER PAD drill 1.0 mm, distributor Buerklin, 12H555 
+PASS1 ROUND_1MM1.5                  ROUND_1MM1.5            ROUND2_1.5MM                                                                 
+PASS2 ROUND_1MM1.5                  ROUND_1MM1.5            ROUND2_1.5MM                                                                 
+Q1    SI7121DN                      TRANSISTOR-FET_SI7113DN TRANSISTOR-FET_1212-8S                                                       
+R1    100k                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R2    2K4                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R3    100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R4    47K                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R5    20K                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R6    5K1                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R7    100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R8    100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R9    100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R10   100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R11   100K                          R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R12   100                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R13   100                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R14   100                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R15   100                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R16   100                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+R17   1K2                           R-EU_R0805              R0805                  RESISTOR, European symbol                             
+S1    SWPB_B3S1000                  DTSM-6                  DTSM-6                                                                       
+S2    SWPB_B3S1000                  DTSM-6                  DTSM-6                                                                       
+S3    SWPB_B3S1000                  DTSM-6                  DTSM-6                                                                       
+S4    SWPB_B3S1000                  DTSM-6                  DTSM-6                                                                       
+S5    SWPB_B3S1000                  DTSM-6                  DTSM-6                                                                       
+X1    MKDS1/12-3,81                 MKDS1/12-3,81           12POL381               MKDS 1/12-3,81 - Order No. 1727117                    
+X2    MKDS1/4-3,81                  MKDS1/4-3,81            4POL381                MKDS 1/4-3,81 - Order No. 1727036                     
