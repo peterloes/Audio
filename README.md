@@ -25,7 +25,7 @@ as well as in laboratory settings
 -	Applicable world-wide due to its compatibility with different types of radio clock receivers 
 -	Data-transfer to external devices, such as personal computers
  
-![My image](https://github.com/peterloes/Scales/blob/master/Getting_Started_Tutorial/2_Electronic_board.jpg)
+![My image](https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/2_Electronic_board.jpg)
 
 - Time Synchronization with atomic clock once a day to ensure optimal data quality
 - Application Current Control twice a day
