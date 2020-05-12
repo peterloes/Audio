@@ -36,3 +36,9 @@ as well as in laboratory settings
 ![My image](https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/2_Mechanik_SNB.JPG)
 
 Prototype: Smart Nest Box with microphone and speaker on top
+
+https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/1_poster_overview.pdf
+
+Mainboard:
+
+https://github.com/peterloes/MOMO
