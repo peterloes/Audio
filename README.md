@@ -33,6 +33,6 @@ as well as in laboratory settings
 - Energy Bypass so that Date and Time are maintained even when changing battery
 - Hyperterminal Output to get real-time data in the field
 
-![My image](https://github.com/peterloes/Scales/blob/master/Getting_Started_Tutorial/1_weigh_cell_rfid.JPG)
+![My image](https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/2_Mechanik_SNB.JPG)
 
 Prototype: Smart Nest Box with microphone and speaker on top
