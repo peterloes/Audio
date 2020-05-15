@@ -11,6 +11,19 @@ mailto:    schneider@hkw-elektronik.de
 www.hkw-elektronik.de
 
 
+Doppel - Lichtschranke Art.Nr. P00700 (Lichtschranken in Frontplatten):
+
+SWISSSENSOR AG
+Geschäftsleitung Hermann Beer
+
+Steinacherstrasse 4
+CH-9327 Tübach
+Germany
+Tel. +41(0)71 845 24 24
+mailto:beer@swisssensor.ch
+www.swisssensor.ch
+
+
 Lithium Ionen Akkupack Art.Nr. 60.16294 Panasonic NCR 18650GA 4S2P
 14,4Volt 6900mAh inklusive SMBus Kabel je. 150mm 
 
@@ -72,26 +85,6 @@ Germany
 Office: +49 (0)2265 9919-14
 E-Mail: rasmus.forntheil@smartrac-group.com
 Internet: www.smartrac-group.com
-
-
-RFID Reader Lichtschranke Artikenr.:170201-00/0 (Long Range)
-
-AFRO Fluginstrumente GmbH
-Andreas Frommwieser
-
-Bahnhofstr. 37
-D - 83253 Rimsting / Chiemsee
-Tel.: +49 (0)8051 / 61249
-Mobil:+49 (0)151/22 684 697
-www.AFRO-Fluginstrumente.de
-A.Frommwieser@AFRO-Fluginstrumente.de
-
-
-MOUSER ELECTRONICS
-
-Texas Instruments 12-mm low-frequency (LF) glass transponders
-Frequency of 134.2 kHz
-Artikelnr.: 595-TRPGR30ATGC
 
 
 Beschichtung mit Schmelzharz Bectron MR3404
