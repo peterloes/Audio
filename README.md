@@ -39,10 +39,6 @@ Prototype: Smart Nest Box with microphone and speaker on top
 
 https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/1_poster_overview.pdf
 
-Mainboard:
-
-https://github.com/peterloes/MOMO
-
 Raw data on SD Card:
 
 https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/6_raw_data.txt
@@ -54,3 +50,7 @@ https://github.com/peterloes/Audio/blob/master/Software/CONFIG.TXT
 Manufacture:
 
 https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/5_Supplier.txt
+
+Mainboard:
+
+https://github.com/peterloes/MOMO
