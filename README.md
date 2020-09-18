@@ -47,10 +47,10 @@ Configuration data on SD Card:
 
 https://github.com/peterloes/Audio/blob/master/Software/CONFIG.TXT
 
-Manufacture:
-
-https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/5_Supplier.txt
-
 Mainboard:
 
 https://github.com/peterloes/MOMO
+
+Manufacture:
+
+https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/5_Supplier.txt
