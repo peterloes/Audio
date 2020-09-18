@@ -49,6 +49,7 @@ https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/6_raw_da
 
 Configuration data on SD Card:
 
+https://github.com/peterloes/Audio/blob/master/Software/CONFIG.TXT
 
 Manufacture:
 
