@@ -1,1 +1,63 @@
-old
+00000000-000000.000 Using HFXO Clock at 32.000MHz
+00000000-000000.000 DCF77: Enabled
+20140101-120000.000 LB2:off
+20140101-120000.000 LB1:off
+20140101-120000.000 Power-Fail: Received interrupt (POWER GOOD)
+20140101-120000.001 SD-Card Inserted
+20140101-120000.083 SD-Card Initialized
+20140101-120000.083 SD-Card File System mounted
+20140101-120000.337 SD-Card 1866MB free
+20140101-120000.338 Using Filename BOX0345.TXT
+20140101-120000.361 MCU: EFM32G230F128 HW-ID: 0x247DBC0658172B17
+20140101-120000.379 Battery Controller Type is "TI bq40z50" at address 0x16
+20140101-120000.399 Battery Manufacturer Name : Dynamis-Batterien
+20140101-120000.417 Battery Device Name       : 60.16294
+20140101-120000.435 Battery Device Type       : LION
+20140101-120000.444 Battery Serial Number     : 0x07F0
+20140101-120000.452 Battery Design Voltage    : 14.400V
+20140101-120000.461 Battery Design Capacity   : 6700mAh
+20140101-120000.470 Battery Full Charge Capac.: 6378mAh
+20140101-120001.235 Battery Remaining Capacity: 3183mAh
+20140101-120001.244 Battery Runtime to empty  : > 45 days
+20140101-120001.252 Battery Actual Voltage    : 14.8V
+20140101-120001.261 Battery Actual Current    : 0mA
+20140101-120001.516 Reading Configuration File CONFIG.TXT
+20140101-120002.477 Initializing RFID reader of type SR for Power Output UA1
+20140101-120002.477 Initializing Audio for Power Output UA2
+20140101-120002.477 Audio Volume control value VC is 30
+20140101-120002.478 Audio Choose a storage device ST is 0
+20140101-120002.478 Audio Choose audio-recording input mode IM is 0
+20140101-120002.479 Audio recording quality (bit rate) mode RQ is 0
+20140101-120111.310 DCF77: Time Frame 1 is 20200810-105900
+20140101-120211.309 DCF77: Time Frame 2 is 20200810-110000
+20200810-110000.309 DCF77: Time Synchronization 11:00:00 (MESZ)
+20200810-110000.310 DCF77: Changing time zone from MEZ to MESZ
+20200810-110000.310 Initial Time Synchronisation
+20200810-110000.310 Checking alarm times against current time 11:00
+20200810-110000.311 - Alarm 1 (08:30 - 09:40) is off
+20200810-110000.311 - Alarm 2 (17:20 - 17:40) is off
+20200810-110000.312 - Alarm 3 (21:20 - 21:40) is off
+20200810-110000.312 - Alarm 4 (02:20 - 02:40) is off
+20200810-110000.313 - Alarm 5 (08:30 - 21:40) is ON
+20200810-110000.313 DCF77: Disabled
+20200810-110000.000 RFID is powered ON
+20200810-110000.000 Power Output UA1 enabled
+20200810-110000.000 Audio module is powered ON
+20200810-110000.001 Power Output UA2 enabled
+20200810-110001.017 Audio: MicroSD card inserted
+20200810-110001.017 Waiting 15s for Audio module being ready to accept commands...
+20200810-110017.000 Audio should be ready, retrieving hard- and software information
+20200810-110017.011 Audio: Work Status Paused
+20200810-110017.124 Audio: Total file numbers 7
+20200810-110017.125 Audio: Please wait up to 50 sec. for capacity left (32GB)
+20200810-110055.323 Audio: Capacity left (Mb) 30418
+20200810-110055.364 Audio: Volume 30 is executed successfully
+20200810-110055.595 Audio: MicroSD card is supported
+20200810-110055.630 Audio: Input Mode 0 connected with MIC
+20200810-110055.665 Audio: Recording quality 0 is 128 Kbps
+20200810-110055.666 Audio module is operational now
+20200810-110103.070 LB1:off
+20200810-110103.070 Transponder: D2ECE7D001AF0001:20:0:1
+20200810-110103.071 PLAYBACK will started
+20200810-110103.146 Audio: Playback ON [T001.wav]
+20200810-110124.038 Audio: Playback off
