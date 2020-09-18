@@ -1,0 +1,146 @@
+# Configuration file for MOMO_AUDIO_PLAY_RECORD (AUDIO_PR)
+# Revision History
+# 2020-07-27,rage   Expansion Soundmodul
+# 2017-01-22,rage   Initial version
+
+# Configuration Variables in config.txt:
+
+# RFID_TYPE [SR, LR]
+
+#   RFID reader device type: SR is Short Range reader, LR is Long Range reader.
+#   If no type is specified (i.e. the variable is #-commented), the associated
+#   logic will not be activated.
+
+
+# RFID_POWER [UA1, UA2]
+#   RFID reader power source, must be set to UA1 or UA2.
+#   If no value is specified (i.e. the variable is #-commented), the associated
+#   logic will not be activated.
+
+# RFID_DETECT_TIMEOUT [s]
+#   Duration in seconds measured from the trigger, i.e. when the light barrier
+#   filter output gets active or a transponder has been read already.
+#   Within this period, the system tries to identify the bird by its
+#   transponder ID.  If no transponder is detected, the bird is treated
+#   as UNKNOWN and the feeder usually will be closed.
+
+
+# LB_FILTER_DURATION [s]
+#   Light barrier (LB) filter duration in seconds.  The LB may change its
+#   state several times during a bird is picking food.  To prevent the
+#   underlying logic from assuming each time "a new bird", this filter has
+#   been implemented.  The duration starts whenever the LB turns to inactive
+#   state, i.e. no object is detected any more.  When the LB returns active
+#   before this time is over, this event will be ignored.  Timing diagram:
+#                         ____        __
+
+#     LB activity  :  ___/    \______/  \______________________________
+#                         ____________________________
+#     Filter Output:  ___/              |------t------\________________
+#
+#   A value of 0 disables the filter.
+
+# ON_TIME_1, OFF_TIME_1 [hour:min] MEZ
+#   These variable determines the on and off time of the MOMO_AUDIO.
+#   When it is in the off state, RFID Reader and Soundmodul is switched off
+#   , light barriers are switched on.
+
+# AUDIO_POWER [UA1, UA2]
+#   AUDIO module power source, must be set to UA1 or UA2.
+#   If no value is specified (i.e. the variable is #-commented)
+#   , the associated logic will not be activated.
+
+# AUDIO_CFG_XX
+#   Configuration values for the audio module FN-RM01 Audio Recorder
+#   and Player Module, see reference "Audio_Modul.pdf".
+#   Currently following parameters are supported:
+#   4.3.9  Volume control
+#          VC - Volume control
+#          Parameter 30: default volume
+#          There are total of 31 volume levels,
+#          Level 1 is mute while level 31 is the maximum volume.
+#   4.3.13 Choose a storage device(µSD Card or USB flash drive)
+#          to work with the module
+#          ST - Storage Device:
+#          Parameter 0:shift to SD card(by default)
+#                    1:shift to USB flash drive
+#   4.3.14 Choose audio-recording input mode  Connection for MIC recording
+#          IM - Input Mode:
+#          Parameter 0:connect with MIC (by default)
+#                    1:connect with LINE-IN
+#                    2:connect wit 2-channel Aux-in
+#   4.3.15 Set audio-recording quality(bit rate)
+#          RQ - Recording Quality:
+#          Parameter 0: 128kbps(by default)
+#                    1: 96kbps
+#                    2: 64kbps
+#                    3: 32kbps
+
+
+# AUDIO PLAYBACK setting [s]
+#   Default duration in seconds. The folder T001 from the 
+#   audio module mikroSD-Card will be continuous played.
+
+
+# AUDIO RECORD setting [s]
+#   Default duration in seconds. The folder Rxxx will be continuous
+#   incremented. Rxxx to Rxxx ++1 and so forth.
+
+
+# AUDIO PLAYBACK_TYPE  [1,2,3,4,5; 6,7,8,9]
+#   Playback: 1,2,3,4,5 not random, 1 for P001.wav over duration in seconds.
+#   Playback: 6,7,8,9 random.
+#   random, 6 for P001.wav and P002.wav over duration in seconds.
+#   random, 9 for P001.wav,P002.wav,P003.wav,P004.wav and P005.wav over duration in seconds.
+
+
+# RF - ID : Audio module
+#   Transponder ID and optional parameters.
+#   ID = 0123456789012345:{playback}:{record}:{playback_type}
+#
+#   Fields may be left empty to use default values, for example
+#   ID = 9E1CE7D001AF0001:1:: but uses the default settings for PLAYBACK, RECORD and PLAYBACK_TYPE.
+#   There are two special IDs: "ANY" means there was a transponder detected,
+#   but its ID is not listed in this file.  "UNKNOWN" means that NO transponder
+#   could be detected within RFID_DETECT_TIMEOUT.
+    
+
+    # RFID configuration
+RFID_TYPE           = SR    # Short Range reader
+RFID_POWER          = UA1   # Set to frontplate PWR_OUT_RFID_GND_LB
+RFID_DETECT_TIMEOUT = 30    # [sec]
+
+
+    # Light barrier filter
+
+LB_FILTER_DURATION   = 10
+
+
+    # Operating time of the MOMO_AUDIO [hour:min] MEZ (MESZ-1)
+ON_TIME_1  = 13:00
+OFF_TIME_1 = 16:00
+
+
+    # AUDIO configuration
+AUDIO_POWER    =  UA2  # 5V output
+AUDIO_CFG_VC   =  30   # Volume Control [xx] default 30, see 4.3.9.
+AUDIO_CFG_ST   =   0   # SD card [x] default 0, see 4.3.13.
+AUDIO_CFG_IM   =   0   # MIC signal [x] default 0, see 4.3.14.
+AUDIO_CFG_RQ   =   0   # Recording Quality [x] default 0, see 4.3.15.
+
+
+    # AUDIO PLAYBACK setting durations (default)
+PLAYBACK  = 20      # [sec]
+
+
+    # AUDIO RECORD setting durations (default)
+RECORD      = 20    # [sec]
+
+
+    # AUDIO TYPE setting durations (default)
+PLAYBACK_TYPE = 1   # not random P001
+
+
+    # ID-specific configurations
+ID = D2ECE7D001AF0001:20:0:1	# runs playback for 20sec, playback_type is 1
+ID = UNKNOWN:20:0:2	# runs playback for 20sec with playback_type 1 for unknown fellows
