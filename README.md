@@ -45,6 +45,8 @@ https://github.com/peterloes/MOMO
 
 Raw data on SD Card:
 
+https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/6_raw_data.txt
+
 Configuration data on SD Card:
 
 
