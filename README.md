@@ -42,3 +42,12 @@ https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/1_poster
 Mainboard:
 
 https://github.com/peterloes/MOMO
+
+Raw data on SD Card:
+
+Configuration data on SD Card:
+
+
+Manufacture:
+
+https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/5_Supplier.txt
