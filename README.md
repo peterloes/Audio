@@ -18,6 +18,8 @@ An efficient application to monitor and control animal behaviour in wildlife
 as well as in laboratory settings
 
 -	Targeted manipulation of 1000 and more individuals
+- Pit-tag numbers targeting Playback-Soundfiles or Record-Soundfiles 
+- Playback Audio files P001.wav/mp3 up to P005.wav/mp3 over time
 - Random Playback Audio files P001.wav/mp3 up to P005.wav/mp3 over time
 - Record Audio files R001.wav up to R999.wav over time
 - Combined Audio Playback and Record over time
