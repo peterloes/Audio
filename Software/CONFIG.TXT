@@ -26,11 +26,12 @@
 
 
 # LB_FILTER_DURATION [s]
-#   Light barrier (LB) filter duration in seconds.  The LB may change its
+#   Light barrier (LB) filter duration in seconds. The LB may change its
 #   state several times during a bird is picking food.  To prevent the
 #   underlying logic from assuming each time "a new bird", this filter has
 #   been implemented.  The duration starts whenever the LB turns to inactive
-#   state, i.e. no object is detected any more.  When the LB returns active
+#   state, i.e. no object is detected any more. When the LB returns active
+
 #   before this time is over, this event will be ignored.  Timing diagram:
 #                         ____        __
 
@@ -47,8 +48,8 @@
 
 # AUDIO_POWER [UA1, UA2]
 #   AUDIO module power source, must be set to UA1 or UA2.
-#   If no value is specified (i.e. the variable is #-commented)
-#   , the associated logic will not be activated.
+#   If no value is specified (i.e. the variable is #-commented),
+#   the associated logic will not be activated.
 
 # AUDIO_CFG_XX
 #   Configuration values for the audio module FN-RM01 Audio Recorder
@@ -78,20 +79,18 @@
 
 
 # AUDIO PLAYBACK setting [s]
-#   Default duration in seconds. The folder T001 from the 
-#   audio module mikroSD-Card will be continuous played.
-
+#   Default duration in seconds.
 
 # AUDIO RECORD setting [s]
-#   Default duration in seconds. The folder Rxxx will be continuous
-#   incremented. Rxxx to Rxxx ++1 and so forth.
+#   Default duration in seconds.
+
 
 
 # AUDIO PLAYBACK_TYPE  [1,2,3,4,5; 6,7,8,9]
-#   Playback: 1,2,3,4,5 not random, 1 for P001.wav over duration in seconds.
-#   Playback: 6,7,8,9 random.
-#   random, 6 for P001.wav and P002.wav over duration in seconds.
-#   random, 9 for P001.wav,P002.wav,P003.wav,P004.wav and P005.wav over duration in seconds.
+#   Playback files not random: P001.x, P002.x, P003.x, P004.x and P005.x. [1,2,3,4,5]
+#   Playback_Type      random: [6,7,8,9].
+#   random, [6] for P001.x and P002.x over duration playback in seconds.
+#   random, [9] for P001.wav,P002.wav,P003.wav,P004.wav and P005.wav over duration playback in seconds.
 
 
 # RF - ID : Audio module
@@ -99,16 +98,26 @@
 #   ID = 0123456789012345:{playback}:{record}:{playback_type}
 #
 #   Fields may be left empty to use default values, for example
+
 #   ID = 9E1CE7D001AF0001:1:: but uses the default settings for PLAYBACK, RECORD and PLAYBACK_TYPE.
 #   There are two special IDs: "ANY" means there was a transponder detected,
 #   but its ID is not listed in this file.  "UNKNOWN" means that NO transponder
 #   could be detected within RFID_DETECT_TIMEOUT.
-    
+#
+#   Please copy on Audio module mikroSD-Card 5 files:
+#   P001.wav/mp3, P002.wav/mp3, P003.wav/mp3, P004.wav/mp3 and P005.wav/mp3
+#   Total file numbers 5.
+
+#
+#   The file Rxxx will be incremented (R+++). R001.wav/mp3 to R999.wav/mp3.
+#   Total file numbers 7.
+#   Means there are R001.wav/mp3 and R002.wav/mp3 on Audio module mikroSD-Card.
+#   Next record file will be R003.wav/mp3      
 
     # RFID configuration
 RFID_TYPE           = SR    # Short Range reader
 RFID_POWER          = UA1   # Set to frontplate PWR_OUT_RFID_GND_LB
-RFID_DETECT_TIMEOUT = 30    # [sec]
+RFID_DETECT_TIMEOUT = 10    # [sec]
 
 
     # Light barrier filter
@@ -117,7 +126,7 @@ LB_FILTER_DURATION   = 10
 
 
     # Operating time of the MOMO_AUDIO [hour:min] MEZ (MESZ-1)
-ON_TIME_1  = 13:00
+ON_TIME_1  = 07:30
 OFF_TIME_1 = 16:00
 
 
@@ -137,10 +146,11 @@ PLAYBACK  = 20      # [sec]
 RECORD      = 20    # [sec]
 
 
-    # AUDIO TYPE setting durations (default)
+    # AUDIO PLAYBACK TYPE setting durations (default)
 PLAYBACK_TYPE = 1   # not random P001
 
 
     # ID-specific configurations
-ID = D2ECE7D001AF0001:20:0:1	# runs playback for 20sec, playback_type is 1
-ID = UNKNOWN:20:0:2	# runs playback for 20sec with playback_type 1 for unknown fellows
+#ID = UNKNOWN:10:0:1
+ID = UNKNOWN:0:10:1
+#ID = UNKNOWN:10:10:1
