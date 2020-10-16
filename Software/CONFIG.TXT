@@ -1,5 +1,6 @@
 # Configuration file for MOMO_AUDIO_PLAY_RECORD (AUDIO_PR)
-# Revision History
+
+# Revision History
 # 2020-07-27,rage   Expansion Soundmodul
 # 2017-01-22,rage   Initial version
 
@@ -60,7 +61,7 @@
 #          Parameter 30: default volume
 #          There are total of 31 volume levels,
 #          Level 1 is mute while level 31 is the maximum volume.
-#   4.3.13 Choose a storage device(µSD Card or USB flash drive)
+#   4.3.13 Choose a storage device(ÂµSD Card or USB flash drive)
 #          to work with the module
 #          ST - Storage Device:
 #          Parameter 0:shift to SD card(by default)
@@ -152,10 +153,7 @@ PLAYBACK_TYPE = 1   # not random P001
 
     # ID-specific configurations
 ID = 108196A801AF0001:30:0:2   # Playback 30sec, file P002
-
 ID = 9E1CE7D001AF0001:A:0:1    # Playback always,file P001
-
 ID = ANY:20:40:5               # for any other ID playback 20sec, record 40sec, file P005
-
 ID = UNKNOWN:0:10	       # record 10sec for unknown fellows
 ID = 108196A801AF0001:10:0:9   # Playback 10sec, random file P001,P002,P003,P004,P005.wav/mp3
