@@ -151,6 +151,11 @@ PLAYBACK_TYPE = 1   # not random P001
 
 
     # ID-specific configurations
-#ID = UNKNOWN:10:0:1
-ID = UNKNOWN:0:10:1
-#ID = UNKNOWN:10:10:1
+ID = 108196A801AF0001:30:0:2   # Playback 30sec, file P002
+
+ID = 9E1CE7D001AF0001:A:0:1    # Playback always,file P001
+
+ID = ANY:20:40:5               # for any other ID playback 20sec, record 40sec, file P005
+
+ID = UNKNOWN:0:10	       # record 10sec for unknown fellows
+ID = 108196A801AF0001:10:0:9   # Playback 10sec, random file P001,P002,P003,P004,P005.wav/mp3
