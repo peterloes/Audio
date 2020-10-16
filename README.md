@@ -24,7 +24,9 @@ as well as in laboratory settings
 - Record Audio files R001.wav up to R999.wav over time
 - Combined Audio Playback and Record over time
 - There are two special IDs:
+
   "ANY" means there was a transponder detected, but its ID is not listed.
+
   "UNKNOWN" means that NO transponder could be detected
 -	Low power consumption and specific data collection lead to long lasting collection periods
 -	Applicable world-wide due to its compatibility with different types of radio clock receivers 
