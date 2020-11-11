@@ -1,8 +1,7 @@
 /***************************************************************************//**
  * @file
  * @brief	MOMO_AUDIO
- * @author	Peter Loes
- * @author	Ralf Gerhauser
+ * @author	Ralf Gerhauser / Peter Loes 
  * @version	2020-07-17
  *
  * This application consists of the following modules:
@@ -63,6 +62,7 @@
  ****************************************************************************//*
 Revision History:
 2020-07-17,rage - Audio Module expansion
+2020-05-12,rage	- Call CheckAlarmTimes() after CONFIG.TXT has been read.
 2019-06-20,rage	- Moved DMA related variables to module "DMA_ControlBlock.c".
 		- Report available memory (debug version only).
 2019-05-24,rage	- Used basic logic from project TAMDL.
@@ -661,8 +661,8 @@ int main( void )
                 /* Clear (previous) Configuration - switch devices off */
 		ClearConfiguration();
                 
-			/* Read and parse configuration file */
-		CfgRead("CONFIG.TXT");
+	        /* Read and parse configuration file */
+		CfgRead(CONFIG_FILE_NAME);
 
 		/* Initialize RFID reader according to (new) configuration */
 		RFID_Init();
@@ -675,7 +675,6 @@ int main( void )
                     
                /* See if devices must be switched on at this time */
                CheckAlarmTimes();
-       
            }
             
 	    /* Check Battery State */
@@ -696,7 +695,7 @@ int main( void )
 	    if (g_EM1_ModuleMask)
 		EMU_EnterEM1();		// EM1 - Sleep Mode
 	    else
-		EMU_EnterEM2(true);	// EM2 - Deep Sleep Mode
+	   	EMU_EnterEM2(true);	// EM2 - Deep Sleep Mode
 	}
 	else
 	{
@@ -899,6 +898,8 @@ static void CheckCommand(void)
     }
 }
 #endif
+
+
 
 #ifdef DEBUG
 // Debug routine to show remaining memory pool size

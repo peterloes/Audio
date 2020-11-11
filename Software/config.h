@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file
  * @brief	Project configuration file
- * @author	Ralf Gerhauser
+ * @author	Ralf Gerhauser / Peter Loes
  * @version	2016-02-27
  *
  * This file allows to set miscellaneous configuration parameters.  It must be
