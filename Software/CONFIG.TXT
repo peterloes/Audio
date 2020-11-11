@@ -124,7 +124,7 @@ RFID_DETECT_TIMEOUT = 20   # [sec]
 
     # Light barrier filter
 
-LB_FILTER_DURATION   = 20
+LB_FILTER_DURATION   = 0
 
 
     # Operating time of the MOMO_AUDIO [hour:min] MEZ (MESZ-1)
@@ -141,15 +141,15 @@ AUDIO_CFG_RQ   =   0   # Recording Quality [x] default 0, see 4.3.15.
 
 
     # AUDIO PLAYBACK setting durations (default)
-PLAYBACK  = 10      # [sec]
+PLAYBACK  = 20      # [sec]
 
 
     # AUDIO RECORD setting durations (default)
-RECORD      = 120    # [sec]
+RECORD      = 10    # [sec]
 
 
     # AUDIO PLAYBACK TYPE setting durations (default)
-PLAYBACK_TYPE = 10   # not random P001
+PLAYBACK_TYPE = 1   # not random P001
 
 
     # ID-specific configurations
