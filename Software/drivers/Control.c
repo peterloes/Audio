@@ -351,33 +351,13 @@ isAudioLocked  = IsAudioLocked();
        pStr += sprintf (pStr, ":%ld", l_KeepRecord);
        pStr += sprintf (pStr, ":%ld", l_PlayType);
        
-//#ifdef LOGGING
        l_flgTwiceIDLocked = true;
-      //sprintf (pStr, "\r\n");
-  //    drvLEUART_puts (line);
-  //    drvLEUART_puts ("\n");
-//      Log(line);
-//#endif
     }
     else
     {
        pStr += sprintf (pStr, " - Audio: Is locked"); 
-
-//#ifdef LOGGING
-     //sprintf (pStr, "\r\n");
-  //   drvLEUART_puts (line);
-  //   drvLEUART_puts ("\n");
-//     Log(line);
-//#endif
-       
-   	//drvLEUART_sync();	// to prevent UART buffer overflow
-       /* Generate Log Message */
-       // Log ("RFID & AUDIO is locked!");
-    }
+   }
 #ifdef LOGGING
-    //sprintf (pStr, "\r\n");
-  //   drvLEUART_puts (line);
-  //   drvLEUART_puts ("\n");
      Log(line);
 #endif    
   
