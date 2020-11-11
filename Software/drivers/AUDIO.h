@@ -39,7 +39,10 @@ void	AudioDisable (void);
     /* Check if to power-on/off AUDIO module */
 void   AudioCheck (void);
 
-    /* Power AUDIO module Off */
+   /* State of AUDIO is locked */
+bool	IsAudioLocked (void);
+ 
+   /* Power AUDIO module Off */
 void	AudioPowerOff (void);
 
     /* AUDIO Power Fail Handler */
@@ -47,18 +50,6 @@ void	AudioPowerFailHandler (void);
 
 /* Send Command to Audio */
 void	SendCmd (const char *pCmdStr);
-
-    /* Receive from the control module PLAYBACK with new PLAY_TYPE */
-void	ControlUpdatePLAYTYPE (int l_PlayType);
-
-    /* Receive from the control module Record */
-void    ControlUpdateRECORD(void); 
-
-    /* Receive from the control module playback_stop */
-void	ControlPLAYBACKSTOP (void);
-
-    /* Receive from the control module record_stop */
-void	ControlRECORDSTOP (void);
 
 
 #endif /* __INC_AUDIO_h */

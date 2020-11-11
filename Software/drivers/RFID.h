@@ -1,7 +1,7 @@
 /***************************************************************************//**
  * @file
  * @brief	Header file of module RFID.c
- * @author	Peter Loes
+ * @author	Ralf Gerhauser / Peter Loes
  * @version	2020-07-27
  ****************************************************************************//*
 Revision History:
@@ -27,16 +27,6 @@ Revision History:
 
 
 /*=============================== Definitions ================================*/
-
-    /*!@brief Flag, if RFID reader is triggered by a light barrier. */
-#ifndef RFID_TRIGGERED_BY_LIGHT_BARRIER
-    #define RFID_TRIGGERED_BY_LIGHT_BARRIER	0
-#endif
-
-    /*!@brief Duration in [s] after which the RFID reader is powered-off. */
-#ifndef DFLT_RFID_POWER_OFF_TIMEOUT
-    #define DFLT_RFID_POWER_OFF_TIMEOUT	30
-#endif
 
     /*!@brief Duration in [s] during the RFID reader tries to read an ID. */
 #ifndef DFLT_RFID_DETECT_TIMEOUT
@@ -80,6 +70,10 @@ bool	IsRFID_Active (void);
 
     /* Enable RFID reader */
 void	RFID_Enable (void);
+
+    /* Enable RFID Power reader */
+void RFIDPower_Enable(void);
+
 
     /* Disable RFID reader */
 void	RFID_Disable (void);

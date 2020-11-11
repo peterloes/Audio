@@ -24,7 +24,7 @@ Revision History:
 #ifndef DFLT_PLAY_TYPE
 /*!@brief Default playback types for not random 1,2,3,4,5 or random: 6,7,8,9 
      * (in numbers).*/
-    #define DFLT_PLAY_TYPE		1	// not random folder T001.wav
+    #define DFLT_PLAY_TYPE		1	// not random folder P001.wav
 #endif
 
 #ifndef DFLT_KEEP_PLAYING_DURATION
@@ -72,6 +72,23 @@ void	ControlInit (void);
     /* Clear Configuration variables (set default values) */
 void	ClearConfiguration (void);
 
+    /* Determine if Audio or Rfid is on */
+bool	IsAudioRfidOn (void);
+
+    /* State of playback is run */
+bool	IsControlPlayRun ();
+
+    /* State of playback type <= 9 playback files */
+int     IsControlPlaybackType();
+
+    /* State of record is run */
+bool	IsControlRecRun (void);
+
+    /* State of playback is stop */
+bool	IsControlPlayStop (void);
+
+    /* State of record is stop */
+bool	IsControlRecStop (void);
 
     /* Inform the control module about a new transponder ID */
 void	ControlUpdateID (char *transponderID);

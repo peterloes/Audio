@@ -62,8 +62,8 @@ Revision History:
 */
 
 /*=============================== Header Files ===============================*/
-//#include <stdlib.h>
-//#include <time.h>
+#include <stdlib.h>   // Intializes random number generator 
+#include <time.h>     // Intializes random number generator 
 
 #include <stdio.h>
 #include <string.h>
@@ -74,6 +74,7 @@ Revision History:
 #include "config.h"		// include project configuration parameters
 #include "AlarmClock.h"
 #include "Audio.h"
+#include "LEUART.h"
 #include "Logging.h"
 #include "Control.h"
 
@@ -81,9 +82,6 @@ Revision History:
 
     // Module Debugging
 #define MOD_DEBUG	0	// set 1 to enable debugging of this module
-
-
-/*=============================== Definitions ================================*/
 
    /*!@brief Internal logical states of the AUDIO system. Used from control.c*/
 typedef enum
@@ -108,15 +106,13 @@ typedef enum
 
 
     /*!@brief Time in [s] to wait for Audio being ready after power-up. */
-#define POWER_UP_DELAY		15
+#define POWER_UP_DELAY		5
 
     /*!@brief Maximum Communication Error Count before giving up. */
 #define MAX_COM_ERROR_CNT	10
 
 
 /*=========================== Typedefs and Structs ===========================*/
-
-   /*!@name Hardware Configuration: Serial Communication via UART. */
 
 /*!@brief Local structure to hold UART specific parameters */
 typedef struct
@@ -162,8 +158,7 @@ static bool	 l_flgInit;
     /*!@brief Flag that determines if AUDIO module is in use. */
 static bool	 l_flgAudioActivate;
 
- /*!@name Hardware Configuration: Serial Communication via UART. */
-//@{
+ /*! USART parameters for Audio communication */
 static const USART_ParmsAudio l_Audio_USART =
 {
     USART0, cmuClock_USART0,		//!< select USART0
@@ -173,7 +168,6 @@ static const USART_ParmsAudio l_Audio_USART =
     9600, usartDatabits8,		//!< Communication parameters for the
     usartNoParity, usartStopbits1	//!< FN-RM01 MP3 Audio 9600/8/N/1
 };
-//@}
 
     /*! Flag if AUDIO should be powered on. */
 static volatile bool	l_flgAudioOn;
@@ -189,30 +183,50 @@ static volatile TIM_HDL	l_hdlWdog = NONE;
 
 
     /*! Variables for the communication with the AUDIO module. */
-static char	l_TxBuffer[15];		//!< Transmit buffer 
-static volatile uint8_t	l_TxIdx;	//!< Index within the transmit buffer
+static char	l_TxBuffer[30];		//!< Transmit buffer 
+static volatile uint8_t l_TxIdx;	//!< Index within the transmit buffer
 static volatile bool	l_flgTxComplete;//!< true: Command has been sent
 static volatile uint8_t	l_ComErrorCnt;	//!< Communication Error Count
 static char	l_RxBuffer[150];	//!< Receive buffer
 static volatile uint8_t	l_RxIdx;	//!< Index within the receive buffer
 
-    /*! Counter for l_RxBuffer [0x00] is really received. */
+    /*!@brief Counter for l_RxBuffer [0x00] is really received. */
 static volatile int l_CheckData = 1;
 
-    /*! Flag for l_RxBuffer command completed set 0 (l_RxIdx). */
-static volatile bool	l_flgComCompleted = false;
+    /*!@brief l_RxBuffer Command completed set 0 (l_RxIdx). */
+static volatile bool l_flgComCompleted = false;
 
-     /* converter hex into int */
+    /*!@brief Converter hex into int */
 static volatile int a, b, c, d;
 
-static volatile uint32_t  record = 0;
-static volatile uint32_t  record_1 = 0;
-static volatile uint32_t  record_2 = 0;
-static volatile uint32_t  record_3 = 0;
+    /*!@brief Current RecordFileNumber */
+static volatile int RecordFileNumber;
+static volatile int digit_1, digit_2, digit_3;
 
-   /*! @brief copy New Playback_Type */
-static volatile uint32_t  NewPLAYBACKTYPE = 0;
+    /*!@brief Current state of the PlaybackType: 1 to 9 */
+static volatile int AudioPlaybackType; // is 1 to 9
 
+    /*!@brief Current state of the PlaybackFileNumber: <= 5 */
+static volatile int PlaybackFileNumber; // is <= 5
+
+    /*!@brief Current state of playback run/stop true means RUN, false means STOP. */
+static volatile bool l_flgIsPlayAction;
+
+    /*!@brief Current state of isRecordBlocked by playback. */
+static volatile bool l_flgIsRecordBlocked;
+
+    /*!@brief Current state of record run/stop true means RUN, false means STOP. */
+static volatile bool l_flgIsRecAction;
+
+   /*!@brief Current state of the check audio init is done: true means ON, false means OFF. */
+static volatile bool l_flgAudioInitIsDone;	// is false for default  
+
+   /*!@brief Show only once Message "Playback and Record are locked": true means ON, false means OFF. */
+static volatile bool l_flgSingleAction;
+
+   /*!@brief Log "Playback and Record are locked" is shown onces: true means ON, false means OFF. */
+static volatile bool l_flgLocked;
+ 
 /*=========================== Forward Declarations ===========================*/
 
        /*! AUDIO Communication Timeout */
@@ -230,6 +244,12 @@ static void CheckAudioData(void);
     /*! AUDIO USART Setup Routine */
 static void AudioUartSetup(void);
 
+    /* Playback Actions with Playback_Type <= 9 */
+void   AudioPlayback(void);
+
+    /* Record Actions */
+void   AudioRecord(void); 
+
 
 /***************************************************************************//**
  *
@@ -244,7 +264,8 @@ void	AudioInit (void)
      /* Check if AUDIO module is already in use */
     if (l_flgAudioActivate)
 	AudioPowerOff();	// power-off and reset audio module and UART
-    
+        l_flgAudioIsOn = false;
+         
         /* Now the AUDIO module isn't active any more */
     l_flgAudioActivate = false;
     
@@ -261,30 +282,30 @@ void	AudioInit (void)
 #endif
     
 #ifdef LOGGING   
-    Log ("Audio Volume control value VC is %ld", g_AudioCfg_VC);
+    Log ("Audio Volume control VC is %ld", g_AudioCfg_VC);
 #endif
     if (g_AudioCfg_VC < 1 | g_AudioCfg_VC > 32)
-	LogError("Audio: VC value must be between 1 and 31");
+	LogError("Volume control must be between 1 and 31");
         
 #ifdef LOGGING   
-    Log ("Audio Choose a storage device ST is %ld",
+    Log ("Audio Storage device ST is %ld",
 	 g_AudioCfg_ST);
 #endif
     if (g_AudioCfg_ST > 1)
-	LogError("Audio: ST value must be between 0 and 1");
+	LogError("Storage device must be between 0 and 1");
 
 #ifdef LOGGING   
-    Log ("Audio Choose audio-recording input mode IM is %ld", g_AudioCfg_IM);
+    Log ("Audio Audio-recording input mode IM is %ld", g_AudioCfg_IM);
 #endif
     if (g_AudioCfg_IM > 2)
-	LogError("Audio: Input Mode must be between 0 and 2");
+	LogError("Audio-recording input mode IM must be between 0 and 2");
     
 #ifdef LOGGING   
-    Log ("Audio recording quality (bit rate) mode RQ is %ld", g_AudioCfg_RQ);
+    Log ("Audio Recording quality (bit rate) mode RQ is %ld", g_AudioCfg_RQ);
 #endif
     if (g_AudioCfg_RQ > 3)
-	LogError("Audio: Recording Quality must be between 0 and 3");
-
+	LogError("Recording quality (bit rate) must be between 0 and 3");
+     
     /* Create timer for a "Communication Watchdog" */
     if (l_hdlWdog == NONE)
 	l_hdlWdog = sTimerCreate (AudioComTimeout);
@@ -293,173 +314,73 @@ void	AudioInit (void)
 
 /***************************************************************************//**
  *
- * @brief	Receive from control module Playback and new Play_Type
+ * @brief	Receive from control.c new Play_Type
  *
- * This routine must be called from AudioCheck() to get the new PlayType from 
- * control module about a new Play_Type.
+ * This routine get the new PlayType from control.c
  *
  ******************************************************************************/
-void ControlUpdatePLAYTYPE (int l_PlayType)
+void AudioPlayback()
 {
 
-//int r;
-  /* Intializes random number generator */
-//time_t t;  
-//srand((unsigned) time(&t));
-  
-        if (l_PlayType >= 1 | l_PlayType <= 5)
-        {
-            NewPLAYBACKTYPE = l_PlayType;
-           
-            /*! Start sending a Command Sequence to AUDIO module. */
-            AudioSendCmdSeq(AUDIO_SEND_PLAYBACK);
-        }
-         /*
-         if (l_PlayType == 6)
-         {
-            r = rand() % 2 + 1;// generate number between 1 and 2
-            
-            if(r != 1)
-            {
-                NewPLAYBACKTYPE = 1;
-            }
-            else
-            {
-                NewPLAYBACKTYPE = 2;
-            }
-         }         
-         if (l_PlayType == 7)
-         {
-            r = rand() % 3 + 1;// generate number between 1 and 3
-            
-            if(r == 1)
-            {
-               NewPLAYBACKTYPE = 1;
-            }
-            if(r == 2)
-            {
-               NewPLAYBACKTYPE = 2;
-            }
-            if(r == 3)
-            {
-               NewPLAYBACKTYPE = 3;
-            }
-            r = 0;
-         }
-         if (l_PlayType == 8)
-         {
-            r = rand() % 4 + 1;// generate number between 1 and 4
-         
-            if(r == 1)
-            {
-               NewPLAYBACKTYPE = 1;
-            }
-            if(r == 2)
-            {
-            NewPLAYBACKTYPE = 2;
-            }
-            if(r == 3)
-            {
-            NewPLAYBACKTYPE = 3;
-            }
-            if(r == 4)
-            {
-            NewPLAYBACKTYPE = 4;
-            }
-         }
-         if (l_PlayType == 9)
-         {
-            r = rand() % 5 + 1;// generate number between 1 and 5
-         
-            if(r == 1)
-            {
-              NewPLAYBACKTYPE = 1;
-            }
-            if(r == 2)
-            {
-           NewPLAYBACKTYPE = 2;
-            }
-            if(r == 3)
-            {
- NewPLAYBACKTYPE = 3;
-            }
-            if(r == 4)
-            {
-   NewPLAYBACKTYPE = 4;
-            }
-            if(r == 5)
-            {
-      NewPLAYBACKTYPE = 5;
-            }
-         }*/
-        //r = 0;
+time_t t;  
+srand((unsigned) time(&t)); // Init only once ??
+
+   if (AudioPlaybackType <= 5)
+   {
+      PlaybackFileNumber = AudioPlaybackType;
+      /*! Start sending a Command Sequence to AUDIO module. */
+      AudioSendCmdSeq(AUDIO_SEND_PLAYBACK);
+   }
+   else
+   {
+      if (AudioPlaybackType == 6)
+      {
+         PlaybackFileNumber = rand() % 2 + 1;// generate number between 1 and 2
+      } 
+      else if (AudioPlaybackType == 7)
+      {
+         PlaybackFileNumber = rand() % 3 + 1;// generate number between 1 and 3
+      }    
+      else if (AudioPlaybackType == 8)
+      {
+         PlaybackFileNumber = rand() % 4 + 1;// generate number between 1 and 4
+      }
+      else if (AudioPlaybackType == 9)
+      {
+         PlaybackFileNumber = rand() % 5 + 1;// generate number between 1 and 5
+      }
+      /*! Start sending a Command Sequence to AUDIO module. */
+      AudioSendCmdSeq(AUDIO_SEND_PLAYBACK);
+   }
 }
 
 
 /***************************************************************************//**
  *
- * @brief	Receive from control module Record
+ * @brief	Receive from control.c Record
  *
- * This routine must be called from AudioCheck() to get the Record from 
- * control module.
+ * This routine send number of record files into AUDIO.c  
  *
  ******************************************************************************/
-void    ControlUpdateRECORD(void)
+void    AudioRecord(void)
 {
-    record++;
-    /* R001 - R009*/
-    if (record >= 1 & record <= 9)
+    RecordFileNumber++;    
+    digit_1 = (RecordFileNumber % 10);                       // 001
+    digit_2 = (((RecordFileNumber - digit_1) % 100) / 10);   // 010
+    digit_3 = (((RecordFileNumber - digit_2) % 1000) / 100); // 100
+    
+    if (digit_3 >= 9 && digit_2 >= 8 && digit_1 >= 0)
     {
-       record_1 = record +48;// 49 dez. -> 0x31
+      /* [R980.wav] reached */
+       LogError("Audio: Supports maximum 999 record files");
     }
-    /* R010 - R099 */
-    if(record >= 10 & record <= 99)
-    {
-       record_2 = record +48;// 49 dez. -> 0x31
-    }
-    else
-    {
-       record_2 = 48;// 48 dez. -> 0x30
-    }
-    /* R100 - R999 */
-    if(record >= 100 & record <= 999)
-    {
-       record_3 = record +48;// 49 dez. -> 0x31
-    } 
-    else
-    {
-       record_3 = 48;// 48 dez. -> 0x30
-    }
+    
+    digit_1 = digit_1 + 48; // 0 into 48 dez
+    digit_2 = digit_2 + 48; // 0 into 48 dez
+    digit_3 = digit_3 + 48; // 0 into 48 dez
+      
     /*! Start sending a Command Sequence to AUDIO module. */
     AudioSendCmdSeq(AUDIO_SEND_RECORD); 
-}
-
-
-/***************************************************************************//**
- *
- * @brief     Receive from the control.c module PLAYBACK_STOP
- *
- * This routine send command Playback_Stop into AUDIO.c  
- *
- ******************************************************************************/
-void	ControlPLAYBACKSTOP (void)
-{
-   /*! Start sending a Command Sequence to AUDIO module. */
-   AudioSendCmdSeq(AUDIO_SEND_PLAYBACK_STOP); 
-}
-
-
-/***************************************************************************//**
- *
- * @brief     Receive from the control.c module RECORD_STOP
- *
- * This routine send command Record_Stop into AUDIO.c
- *
- *****************************************************************************/
-void	ControlRECORDSTOP (void)
-{
-   /*! Start sending a Command Sequence to AUDIO module. */
-   AudioSendCmdSeq(AUDIO_SEND_RECORD_STOP); 
 }
 
 
@@ -476,10 +397,8 @@ void	ControlRECORDSTOP (void)
  ******************************************************************************/
 void AudioEnable(void)
 {
-   
     /* initiate power-on of the AUDIO hardware */
     l_flgAudioOn = true;
-       
 }
 
 /***************************************************************************//**
@@ -488,7 +407,7 @@ void AudioEnable(void)
  *
  * This routine immediately disables the AUDIO module.
  *
- * @see AudioEnable(), AUDIO_TimedDisable(), AudioCheck()
+ * @see AudioEnable(), AudioCheck()
  *
  ******************************************************************************/
 void AudioDisable (void)
@@ -520,9 +439,9 @@ static void AudioPowerOn (void)
     {      
 #ifdef LOGGING
 	/* Generate Log Message */
-	Log ("Audio module is powered ON");
+	Log ("Audio is powered ON");
 #endif
-      
+         
     /* (Re-)initialize variables */
     l_flgTxComplete = false;
     l_RxIdx = l_TxIdx = 0;
@@ -539,7 +458,10 @@ static void AudioPowerOn (void)
     /* Wait some time until Audio is up and running */
     l_State = AUDIO_STATE_POWER_ON;
     /* Log Message see state =  AUDIO_STATE_POWER_ON */
-    }
+    
+    l_flgAudioInitIsDone = false;
+    l_flgLocked = false;
+   }
 }
 
 
@@ -552,8 +474,83 @@ static void AudioPowerOn (void)
  ******************************************************************************/
 void	AudioCheck (void)
 {
-    if (l_flgAudioOn)
-    {
+   bool	isControlPlayRun, isControlPlayStop;
+   bool	isControlRecRun, isControlRecStop;
+   int  isControlPlaybackType;
+  
+   /* Get current state of playback run and stop from control.c */
+   isControlPlayRun  = IsControlPlayRun();
+   isControlPlayStop = IsControlPlayStop();
+   
+   /* Get current state of record run and stop from control.c*/
+   isControlRecRun  = IsControlRecRun();
+   isControlRecStop = IsControlRecStop();
+   
+   /* Get current state of playback type from control.c */
+   isControlPlaybackType = IsControlPlaybackType();  
+   AudioPlaybackType = isControlPlaybackType;
+   
+   
+   /* Start Audio Playback */
+   if (isControlPlayRun && !isControlPlayStop && !l_flgIsPlayAction)
+   {
+     if (l_flgAudioInitIsDone)
+     {
+        l_flgIsPlayAction = true;
+        l_flgSingleAction = false;
+        l_flgIsRecordBlocked = true;
+        AudioPlayback();
+     }
+     else 
+     {  
+        if(!l_flgSingleAction)
+        {
+        /* Generate Log Message */
+          Log ("Audio: Playback and Record are locked");
+        l_flgSingleAction = true;
+        }
+      }
+   }
+
+   /* Stop Audio Playback */
+   if (isControlPlayStop && !isControlPlayRun  && l_flgIsPlayAction)   
+   {
+      l_flgIsPlayAction = false;
+      /*! Start sending a Command Sequence to AUDIO module. */
+      AudioSendCmdSeq(AUDIO_SEND_PLAYBACK_STOP);
+   }
+   
+   /* Start Audio Record */
+   if (isControlRecRun && !isControlRecStop && !l_flgIsRecAction && !l_flgIsRecordBlocked)
+   {
+      if (l_flgAudioInitIsDone)
+      {
+         l_flgIsRecAction = true;
+         l_flgSingleAction = false; 
+         AudioRecord();
+      }
+      else
+      {
+         if(!l_flgSingleAction)
+         {
+            /* Generate Log Message */
+            Log ("Audio: Playback and Record are locked");
+            l_flgSingleAction = true;
+         }
+      }
+   } 
+
+   /* Stop Audio Record */
+   if (isControlRecStop && !isControlRecRun && l_flgIsRecAction) 
+   {
+      l_flgIsRecAction = false; 
+      /*! Start sending a Command Sequence to AUDIO module. */
+      AudioSendCmdSeq(AUDIO_SEND_RECORD_STOP);
+   }
+      
+   /* Audio Power */
+   if (l_flgAudioOn)
+   {
 	/* Audio module should be powered ON */
 	if (! l_flgAudioIsOn)
 	{
@@ -568,8 +565,26 @@ void	AudioCheck (void)
 	{
 		AudioPowerOff();
 		l_flgAudioIsOn = false;
-	}
+                l_flgSingleAction = false;
+   	}
     }
+}
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if Audio Module is locked  
+ *
+ * This routine is used to determine if l_flgSingleAction is currently on.
+ * See Control.c
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module is locked,
+ *      <i>false</i> if not.
+ *
+ ******************************************************************************/
+bool	IsAudioLocked ()
+{
+    return l_flgLocked;
 }
 
 
@@ -606,8 +621,10 @@ void AudioPowerOff (void)
 
 #ifdef LOGGING
     /* Generate Log Message */
-    Log ("Audio module is powered off");
+    Log ("Audio is powered off");
 #endif
+    
+    l_flgAudioInitIsDone = false;
 }
   
 
@@ -649,6 +666,8 @@ AUDIO_STATE	startState;
 
     (void) hdl;		// suppress compiler warning "unused parameter"
 
+    drvLEUART_sync();	// to prevent UART buffer overflow
+    
     /* Check error count */
     if (l_ComErrorCnt > MAX_COM_ERROR_CNT)
     {
@@ -712,7 +731,7 @@ AUDIO_STATE	startState;
 	      l_ComErrorCnt, l_State);
 #endif
 
-    /* Otherwise initiate recovery of the scales system */
+    /* Otherwise initiate recovery of the audio module */
     if (l_ComErrorCnt < MAX_COM_ERROR_CNT)
     {
 	/* Immediately disable and power off the audio system */
@@ -749,21 +768,18 @@ AUDIO_STATE	startState;
  ******************************************************************************/
 void AudioSendCmdSeq(AUDIO_STATE state)
 {
-
-uint32_t  checksum_int;
-
 char  buffer[40];
 const char *cmd;
+int  checksum_int;
 
     cmd = buffer;
     switch (state)
     {
-          
-       case AUDIO_GET_WORK_STATUS:  // 4.4.2 Current work status
+       case AUDIO_GET_WORK_STATUS:  // 4.4.2 Current work status (send)
             sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xC2, 0xC5, 0x7E);
             break;
     
-       case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers on SD card or USB flash
+       case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers on SD card or USB flash (send)
             sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xC5, 0xC8, 0x7E);
             break;
 
@@ -849,12 +865,12 @@ const char *cmd;
             break;
          
        case AUDIO_SEND_PLAYBACK: // 4.3.2 Specify playback of a file by name [P001-P005] (send)
-            if (NewPLAYBACKTYPE != 0)
+            if (PlaybackFileNumber <= 5)
             {
-               NewPLAYBACKTYPE = NewPLAYBACKTYPE + 48;// 49 dez. -> 0x31
+               PlaybackFileNumber = PlaybackFileNumber + 48;// 49 dez. -> 0x31
                /* checksum integer calculation [0x07, 0xA3, 0x50, 0x30, 0x30]*/
-               checksum_int = 7 + 163 + 80 + 48 + 48 + NewPLAYBACKTYPE;//18B
-               sprintf(buffer, "%c%c%c%c%c%c%c%c%c", 0x7E, 0x07, 0xA3, 0x50, 0x30, 0x30, NewPLAYBACKTYPE, checksum_int, 0x7E);
+               checksum_int = 7 + 163 + 80 + 48 + 48 + PlaybackFileNumber;//18B
+               sprintf(buffer, "%c%c%c%c%c%c%c%c%c", 0x7E, 0x07, 0xA3, 0x50, 0x30, 0x30, PlaybackFileNumber, checksum_int, 0x7E);
             }           
             else
             {
@@ -865,8 +881,8 @@ const char *cmd;
             
        case AUDIO_SEND_RECORD: // 4.3.17 Specify recording of a file by name [R001.wav] (send)
             /* checksum integer calculation [0x07,0xD6,0x52,0x30,0x30,0x31]*/
-            checksum_int = 7+214+82+record_3+record_2+record_1;
-            sprintf(buffer, "%c%c%c%c%c%c%c%c%c", 0x7E, 0x07, 0xD6, 0x52, record_3, record_2, record_1, checksum_int, 0x7E);
+            checksum_int = 7 + 214 + 82 + digit_3 + digit_2 + digit_1;
+            sprintf(buffer, "%c%c%c%c%c%c%c%c%c", 0x7E, 0x07, 0xD6, 0x52, digit_3, digit_2, digit_1, checksum_int, 0x7E);
             // checksum decimal: 7+214+82+48+48+49 = 448 dec. / 0x1C0
             break;
        
@@ -880,10 +896,10 @@ const char *cmd;
              //cmd = "7E03D9DC7E";
              break;
              
-  //    case AUDIO_STATE_OPERATIONAL: // 4.4.6 Current status SD or USB flash
-  //          /* send dummy "Stop playback" without 0x00 go into next state */
-  //          sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xAB, 0xAE, 0x7E);
-  //          break;
+    //  case AUDIO_STATE_OPERATIONAL: // 4.4.6 Current status SD or USB flash (send)
+    //       /* send dummy "Stop playback" without 0x00 go into next state */
+    //        sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xAB, 0xAE, 0x7E);
+    //      break;
     
 
      default:
@@ -967,12 +983,10 @@ static void CheckAudioData(void)
 #if MOD_DEBUG	// for debugging only
     Log("Audio Data: '%s' state=%d", l_RxBuffer, l_State);
 #endif
-     
     /* Consider state */
     switch (l_State)
     {
-    
-       case AUDIO_STATE_POWER_ON: // Prompt after power-up 4.4.6 Current status SD or USB
+        case AUDIO_STATE_POWER_ON: // Prompt after power-up 4.4.6 Current status SD or USB (answer)
           if (strncmp(l_RxBuffer, "Ê", 1) == 0)  
           {      
              /* Connection Status operation code 0xCA is received */
@@ -997,7 +1011,7 @@ static void CheckAudioData(void)
 #ifdef LOGGING
                  /* Generate Log Message */
  	         Log ("Waiting %ds for Audio module being ready to accept commands...",
-	          POWER_UP_DELAY);
+	               POWER_UP_DELAY);
 #endif
                  /* After delay call AudioComTimeout */
                  if (l_hdlWdog != NONE)
@@ -1007,31 +1021,31 @@ static void CheckAudioData(void)
                  l_flgComCompleted = true;
              }
              l_CheckData++;
-         }
-         else
-         {
+          }
+          else
+          {
              /* Connection status 0xCA is not received */
              LogError("Audio: Connection MicroSD card or USB flash Status");
              SetError(ERR_SRC_AUDIO);	// indicate error via LED
              l_flgComCompleted = true;
-         }
-         break;
+          }
+          break;
           
-       case AUDIO_GET_WORK_STATUS:	 // 4.4.2 Current work status 0xC2
-           if (strncmp(l_RxBuffer, "Â", 1) == 0)
-	   {      
+       case AUDIO_GET_WORK_STATUS:	 // 4.4.2 Current work status 0xC2 (answer)
+          if (strncmp(l_RxBuffer, "Â", 1) == 0)
+	  {      
                /* Connection Status operation code 0xCA is received */
               if (l_CheckData >= 2)  // l_CheckData = 1
               {  
                  /* Work Status operation code 0xC2 is received */
                  if (strncmp(l_RxBuffer, "Â", 2) == 0) // 0x01: Playing
                  {
-                    Log ("Audio: Work Status Playing");
+                    Log("Audio: Work Status Playing");
                     AudioSendCmdSeq(l_State+1);
                  } 
                  if (strncmp(l_RxBuffer, "Â", 2) == 0) // 0x02: Stopped
                  {
-                    Log ("Audio: Work Status Stopped");
+                    Log("Audio: Work Status Stopped");
                     l_State = AUDIO_STATE_OPERATIONAL;
                  }
                  if (strncmp(l_RxBuffer, "Â", 2) == 0) // 0x03: Paused
@@ -1053,19 +1067,19 @@ static void CheckAudioData(void)
                  l_flgComCompleted = true;
               }
               l_CheckData++;
-           }
-           else
-           {
+          }
+          else
+          {
               /* Work Status replay 0xC2 is not received */
-              LogError("Audio: Work Status");
+              LogError("Audio: No Work Status");
               SetError(ERR_SRC_AUDIO);	// indicate error via LED
               l_flgComCompleted = true;
-           }
-           break;
+          }
+          break;
  
-        case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers in root directory 0xC5 
-           if (strncmp(l_RxBuffer, "Å", 1) == 0) // tested for 257 files
-	   { 
+        case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers in root directory 0xC5 (answer)
+          if (strncmp(l_RxBuffer, "Å", 1) == 0) // tested for 257 files
+	  { 
               /* Connection Status operation code 0xC5 is received */
               if (l_CheckData >= 3) //l_CheckAUDIOData = 1
               {     
@@ -1076,9 +1090,12 @@ static void CheckAudioData(void)
                        b =  (l_RxBuffer[1] & 0x0F) * 256;       // 16x16
                        c = ((l_RxBuffer[2] >> 4) & 0x0F) * 16;  // 16
                        d =  (l_RxBuffer[2] & 0x0F) * 1;         // 1
-                    
-                       Log ("Audio: Total file numbers %d", a+b+c+d);
-                       Log ("Audio: Please wait up to 50 sec. for capacity left (32GB)");
+                       
+                       RecordFileNumber = (a+b+c+d)-5;
+                       
+                       Log ("Audio: Total file numbers %d (Includes 5 playback files)", a+b+c+d);
+                       Log ("Audio: Next Record file is [R%03d.wav]", RecordFileNumber + 1);
+                       Log ("Audio: Waiting up to 50s for capacity left (microSD Card 32GB)");
                       
                        l_CheckData = 0;
                        l_flgComCompleted = true;
@@ -1086,18 +1103,18 @@ static void CheckAudioData(void)
                    }
                    else
                    {
-                      LogError("Audio: no file number");
+                      LogError("Audio: No file numbers");
                       SetError(ERR_SRC_AUDIO);	// indicate error via LED
                       l_flgComCompleted = true;
                    }
               }
               l_CheckData++;
-           }
-           break;
+          }
+          break;
            
-        case AUDIO_GET_SPACE_LEFT:   // 4.4.9 Space left in the storage device
-           if (strncmp(l_RxBuffer, "Î", 1) == 0)     
-           {
+        case AUDIO_GET_SPACE_LEFT:   // 4.4.9 Space left in the storage device (answer)
+          if (strncmp(l_RxBuffer, "Î", 1) == 0)     
+          {
               /* Connection Status operation code 0xCE is received */
               if (l_CheckData >= 3) //l_CheckData = 1
               { 
@@ -1124,18 +1141,18 @@ static void CheckAudioData(void)
                  }
               }
               l_CheckData++;
-           }
-           break; 
+          }
+          break; 
   
        case AUDIO_STATE_SEND_VC:    // 4.3.9. Volume control (answer)
-           if (strncmp(l_RxBuffer, "", 1) == 0)     
-           { 
+          if (strncmp(l_RxBuffer, "", 1) == 0)     
+          { 
               /* 0x01 command execution failed */
               LogError("Audio: Volume execution failed");
               SetError(ERR_SRC_AUDIO);	// indicate error via LED
-           }
-           else
-           {
+          }
+          else
+          {
               if (g_AudioCfg_VC == 0)
               {
                  Log ("ERROR Audio: Volume %i value must be between 1 and 31", g_AudioCfg_VC);
@@ -1144,12 +1161,11 @@ static void CheckAudioData(void)
               {
                   Log ("Audio: Volume %i is executed successfully", g_AudioCfg_VC);
               }
-           }
-           l_CheckData = 1;
-           l_flgComCompleted = true;
-           AudioSendCmdSeq(l_State+1);
-    
-           break;
+          }
+          l_CheckData = 1;
+          l_flgComCompleted = true;
+          AudioSendCmdSeq(l_State+1);
+          break;
    
        case AUDIO_STATE_SEND_ST:    // 4.3.13. Storage device (answer)
            if (strncmp(l_RxBuffer, "", 1) == 0)
@@ -1185,15 +1201,15 @@ static void CheckAudioData(void)
           {
              if (g_AudioCfg_IM == 0)
              {  
-                Log ("Audio: Input Mode %i connected with MIC", g_AudioCfg_IM );
+                Log ("Audio: Input Mode connected with MIC");
              }
              if (g_AudioCfg_IM == 1)
              {  
-                Log ("Audio: Input Mode %i connected with LINE-IN", g_AudioCfg_IM );
+                Log ("Audio: Input Mode connected with LINE-IN");
              }
              if (g_AudioCfg_IM == 2)
              {  
-                Log ("Audio: Input Mode %i connected with 2-channel AUX", g_AudioCfg_IM );
+                Log ("Audio: Input Mode connected with 2-channel AUX");
              }
           }
           l_CheckData = 1;          
@@ -1207,24 +1223,25 @@ static void CheckAudioData(void)
             /* 0x01 command execution failed */   
             LogError("Audio: Recording quality execution failed");
             SetError(ERR_SRC_AUDIO);	// indicate error via LED
+            l_flgAudioInitIsDone = false;
          }
          else
          { 
             if (g_AudioCfg_RQ == 0)
             {  
-               Log ("Audio: Recording quality %i is 128 Kbps", g_AudioCfg_RQ);
+               Log ("Audio: Recording quality is 128 Kbps");
             }
             if (g_AudioCfg_RQ == 1)
             {  
-               Log ("Audio: Recording quality %i is 96 Kbps", g_AudioCfg_RQ);
+               Log ("Audio: Recording quality is 96 Kbps");
             }
             if (g_AudioCfg_RQ == 2)
             {  
-               Log ("Audio: Recording quality %i is 64 Kbps", g_AudioCfg_RQ);
+               Log ("Audio: Recording quality is 64 Kbps");
             }
             if (g_AudioCfg_RQ == 3)
             {  
-               Log ("Audio: Recording quality %i is 32 Kbps", g_AudioCfg_RQ);
+               Log ("Audio: Recording quality is 32 Kbps");
             }
             Log ("Audio module is operational now");
 	    ClearError(ERR_SRC_AUDIO);	// command sequence completed
@@ -1232,53 +1249,66 @@ static void CheckAudioData(void)
          l_CheckData = 1;
          l_flgComCompleted = true;
          l_State = AUDIO_STATE_OPERATIONAL;
+         l_flgAudioInitIsDone = true;
          break;
      
       case AUDIO_SEND_PLAYBACK: // 4.3.2 Specify playback of a file by name [P001-P005] (answer)
+          l_flgLocked = true;
           if (strncmp(l_RxBuffer, "", 1) == 0) 
           {
                /* 0x01 command execution failed */
-               LogError("Audio: Playback ON failed");
-	  }
+               LogError("Audio: Playback ON failed - Control Playback Type - Wait for Playback off");
+          }
 	  else
 	  {
-              if (NewPLAYBACKTYPE == 49)// 49 dez. -> 0x31
+              if (PlaybackFileNumber == 1 || PlaybackFileNumber == 49)// 49 dez. -> 0x31
               {   
-                 Log("Audio: Playback ON [P001.x]");
+                 Log ("Audio: Playback ON [P001.x]");
 	      }
-              if (NewPLAYBACKTYPE == 50)// 50 dez. -> 0x32
+              if (PlaybackFileNumber == 2 || PlaybackFileNumber == 50)// 50 dez. -> 0x32
               {   
-                 Log("Audio: Playback ON [P002.x]");
+                 Log ("Audio: Playback ON [P002.x]");
 	      }
-              if (NewPLAYBACKTYPE == 51)// 51 dez. -> 0x33
+              if (PlaybackFileNumber == 3 || PlaybackFileNumber == 51)// 51 dez. -> 0x33
               {   
-                 Log("Audio: Playback ON [P003.x]");
+                 Log ("Audio: Playback ON [P003.x]");
 	      }
-              if (NewPLAYBACKTYPE == 52)// 52 dez. -> 0x34
+              if (PlaybackFileNumber == 4 || PlaybackFileNumber == 52)// 52 dez. -> 0x34
               {   
-                 Log("Audio: Playback ON [P004.x]");
+                 Log ("Audio: Playback ON [P004.x]");
 	      }
-              if (NewPLAYBACKTYPE == 53)// 53 dez. -> 0x35
+              if (PlaybackFileNumber == 5 || PlaybackFileNumber == 53)// 53 dez. -> 0x35
               {   
-                 Log("Audio: Playback ON [P005.x]");
+                 Log ("Audio: Playback ON [P005.x]");
 	      }
           }
+          PlaybackFileNumber = 0;
           l_flgComCompleted = true;
           l_State = AUDIO_STATE_OPERATIONAL;
-	  break;
+       	  break;
               
       case  AUDIO_SEND_RECORD: // 4.3.17 Specify recording of a file by name [R001.wav] (answer)
+          l_flgLocked = true;  
           if (strncmp(l_RxBuffer, "", 1) == 0) 
           {
               /* 0x01 command execution failed */
-              LogError("Audio: Record ON failed");
-	  }
+              LogError("Audio: Storage device is full");
+          }          
 	  else
 	  {
              /* 3-Digit Integer Value */ 
-             Log("Audio: Record ON [R%03d.wav]", record);
+             Log ("Audio: Record ON [R%03d.wav]", RecordFileNumber);
           }
+          if (strncmp(l_RxBuffer, "", 1) == 0)
+          {
+              /* 0x02 command execution failed */
+              LogError("Audio: Record ON failed");
+          }
+          digit_1 = 0;
+          digit_2 = 0;
+          digit_3 = 0;
           l_flgComCompleted = true;
+          l_State = AUDIO_STATE_OPERATIONAL;
           break;
             
        case AUDIO_SEND_PLAYBACK_STOP: // 4.3.6 Stop playback (answer)
@@ -1290,10 +1320,12 @@ static void CheckAudioData(void)
             else
 	    {
                Log("Audio: Playback off");
+               l_flgLocked = false;
             }
+            l_flgIsRecordBlocked = false;
             l_flgComCompleted = true;
-           l_State = AUDIO_STATE_OPERATIONAL;
-	   break;
+            l_State = AUDIO_STATE_OPERATIONAL;
+	    break;
             
 	case AUDIO_SEND_RECORD_STOP: // 4.3.20 Stop recording (answer)
            if (strncmp(l_RxBuffer, "", 1) == 0) 
@@ -1303,10 +1335,11 @@ static void CheckAudioData(void)
 	   else
 	   {
               Log("Audio: Record off");
+              l_flgLocked = false;
            }
            l_flgComCompleted = true;
-          l_State = AUDIO_STATE_OPERATIONAL;
-	  break;
+           l_State = AUDIO_STATE_OPERATIONAL;
+	   break;
            
       case AUDIO_STATE_OPERATIONAL: // 4.4.6 Current status SD or USB (answer)
           if (strncmp(l_RxBuffer, "Ê", 1) == 0)  
@@ -1321,6 +1354,7 @@ static void CheckAudioData(void)
                  if (strncmp(l_RxBuffer, "Ê", 2) == 0) // 0x01: MicroSD card connected only	         
                  {
                     Log ("Audio: MicroSD card inserted");
+                    Log ("Remove and Insert SD Card to Refresh System");
                  }
                  if (strncmp(l_RxBuffer, "Ê", 2) == 0) // 0x02: USB flash connected only
                  { 
@@ -1337,7 +1371,7 @@ static void CheckAudioData(void)
            }
            else
            {
-               l_flgComCompleted = true;
+              l_flgComCompleted = true;
            }
            break;
    
@@ -1349,7 +1383,6 @@ static void CheckAudioData(void)
             l_flgComCompleted = true;
     }
 }
-
 
 
 /*============================================================================*/
@@ -1439,8 +1472,8 @@ uint8_t rxData;
                   {
                       l_RxIdx = 0;
                       l_RxBuffer[1] = EOS;
-                      l_RxBuffer[1] = EOS;
                       l_RxBuffer[2] = EOS;
+                      l_RxBuffer[3] = EOS;
                       l_flgComCompleted = false;
                   }
                   l_RxBuffer[l_RxIdx++] = rxData;

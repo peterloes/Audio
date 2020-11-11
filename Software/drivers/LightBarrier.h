@@ -52,7 +52,7 @@ Revision History:
 /*================================ Global Data ===============================*/
 
 extern volatile uint32_t  g_LB_ActiveMask;
-extern int32_t   g_LB_FilterDuration;
+extern uint32_t   g_LB_FilterDuration;
 
 /*================================ Prototypes ================================*/
 

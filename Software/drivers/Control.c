@@ -1,8 +1,7 @@
 /***************************************************************************//**
  * @file
  * @brief	Sequence Control
- * @author	Ralf Gerhauser
- * @author      Peter Loes 
+ * @author      Ralf Gerhauser / Peter Loes  
  * @version	2018-08-03
  *
  * This is the automatic sequence control module.  It controls the power
@@ -13,14 +12,14 @@
  *
  ****************************************************************************//*
 Revision History:
-2020-00-03, Start and Stop Playback & Record
+2020-01-03,rage	-  Start and Stop Playback & Record
 2017-05-02,rage	- ControlInit: Added CONTROL_INIT structure to specify the
 		  power output.
 		- PWR_OUT_DEF contains the bit address and logical enable level
 		  for all power output pins.
 		- ExtIntEnableAll() is called when switching the MOMOAudio on again
 		  to consider the current state of all EXTI interrupt inputs.
-		- Implemented PowerOutput() and IsPowerOutputOn().
+		- Implemented PowerOutputs().
 		- Removed CAM1 and CAM2 routines.
 2017-01-25,rage	Initial version.
 */
@@ -32,6 +31,7 @@ Revision History:
 #include "em_int.h"
 #include "em_gpio.h"
 #include "ExtInt.h"
+#include "LEUART.h"
 #include "Logging.h"
 #include "LightBarrier.h"
 #include "AlarmClock.h"
@@ -39,6 +39,7 @@ Revision History:
 #include "Audio.h"
 #include "CfgData.h"
 #include "Control.h"
+#include "PowerFail.h"
 
 
 /*=============================== Definitions ================================*/
@@ -125,7 +126,7 @@ static const CFG_VAR_DEF l_CfgVarList[] =
  { "LB_FILTER_DURATION",       CFG_VAR_TYPE_INTEGER,    &g_LB_FilterDuration  },
  { "RFID_TYPE",		       CFG_VAR_TYPE_ENUM_1,	&g_RFID_Type	},
  { "RFID_POWER",	       CFG_VAR_TYPE_ENUM_2,	&g_RFID_Power	},
- { "RFID_DETECT_TIMEOUT",      CFG_VAR_TYPE_DURATION,	&g_RFID_DetectTimeout },
+ { "RFID_DETECT_TIMEOUT",      CFG_VAR_TYPE_INTEGER,	&g_RFID_DetectTimeout },
  { "AUDIO_POWER",              CFG_VAR_TYPE_ENUM_2,     &g_AudioPower	},
  { "AUDIO_CFG_VC",             CFG_VAR_TYPE_INTEGER,	&g_AudioCfg_VC	},
  { "AUDIO_CFG_ST",             CFG_VAR_TYPE_INTEGER,	&g_AudioCfg_ST	},
@@ -133,7 +134,7 @@ static const CFG_VAR_DEF l_CfgVarList[] =
  { "AUDIO_CFG_RQ",             CFG_VAR_TYPE_INTEGER,	&g_AudioCfg_RQ	},
  { "PLAYBACK",                 CFG_VAR_TYPE_DURATION,	&l_dfltKeepPlayback },
  { "RECORD",	               CFG_VAR_TYPE_DURATION,	&l_dfltKeepRecord   },
- { "PLAYBACK_TYPE",            CFG_VAR_TYPE_DURATION,	&l_dfltPlayType     },
+ { "PLAYBACK_TYPE",            CFG_VAR_TYPE_INTEGER,	&l_dfltPlayType     },
  { "ID",                       CFG_VAR_TYPE_ID,	        NULL	            },
  {  NULL,                      END_CFG_VAR_TYPE,        NULL		    }
 };
@@ -154,9 +155,11 @@ static volatile bool	l_flgPlaybackRun = true;
     /*!@brief Flag if playback is currently run. */
 static volatile bool	l_flgPlaybackIsRun;
 
-    /*!@brief Flag lock new transponder if playback or record is currently running. */
-static volatile bool	l_flgPlayRecIslock = false;
+    /*!@brief Current state of the AudioRfidPower: true means ON, false means OFF. */
+static volatile bool	l_flgAudioRfidPower;	// is false for default
 
+/*!@brief If current ID appears twice lock: true means locked, false means unlocked. */
+static volatile bool	l_flgTwiceIDLocked;	// is false for default
 /*=========================== Forward Declarations ===========================*/
 
 static void	PlayRecAction (TIM_HDL hdl);
@@ -164,6 +167,22 @@ static void	PlaybackRun (void);
 static void	RecordRun (void);
 
 static void	PowerControl (int alarmNum);
+
+    /*!@brief Current state of the AudioPlaybackRun: true means ON, false means OFF. */
+static volatile bool	l_flgAudioPlayRun;	// is false for default
+
+    /*!@brief Current state of the AudioPlaybackStop: true means ON, false means OFF. */
+static volatile bool	l_flgAudioPlayStop; // is false for default
+
+    /*!@brief Current state of the AudiRecordRun: true means ON, false means OFF. */
+static volatile bool	l_flgAudioRecRun; // is false for default
+
+/*!@brief Current state of the AudiRecordStop: true means ON, false means OFF. */
+static volatile bool	l_flgAudioRecStop; // is false for default
+
+/*!@brief Current state of the PlaybackType:  1 to 9. */
+static volatile int	AudioPlaybackType; // is <= 9 
+
 
 /***************************************************************************//**
  *
@@ -237,7 +256,25 @@ int	i;
     g_AudioCfg_ST = 0;
     g_AudioCfg_IM = 0;
     g_AudioCfg_RQ = 0;
-        
+}
+
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if AlarmTime ON / off 
+ *
+ * The Audio module and the RFID reader can be switched on and off by
+ * setting alarm times.  This routine is used to determine if the AlarmTime
+ * is currently on.
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module
+ *      and the RFID reader is on, <i>false</i> if not. See Lightbarrier.c
+ *
+ ******************************************************************************/
+bool	IsAudioRfidOn (void)
+{
+    return l_flgAudioRfidPower;
 }
 
 
@@ -259,9 +296,15 @@ char	 line[120];
 char	*pStr;
 ID_PARM	*pID;
 
-    pStr = line;
+    /*!@brief Current state of of Audio Module is locked from audio.c */
+static volatile bool	 isAudioLocked;
+isAudioLocked  = IsAudioLocked();
 
+    pStr = line;
+    if(!isAudioLocked && !l_flgTwiceIDLocked)
+    {      
     pID = CfgLookupID (transponderID);
+    }
     if (pID == NULL)
     {
 	/* specified ID not found, look for an "ANY" entry */
@@ -293,6 +336,8 @@ ID_PARM	*pID;
 	pStr += sprintf (pStr, "Transponder: %s", transponderID);
     }
 
+    if(!isAudioLocked && !l_flgTwiceIDLocked)
+    { 
     /* prepare the associated variables */
     l_KeepPlayback = (pID->KeepPlayback == DUR_INVALID	? l_dfltKeepPlayback
 							: pID->KeepPlayback);
@@ -300,64 +345,74 @@ ID_PARM	*pID;
 							: pID->KeepRecord);
     l_PlayType     = (pID->PlayType  == DUR_INVALID	? l_dfltPlayType
 							: pID->PlayType);
-   
-    /* append current parameters to ID */
-    pStr += sprintf (pStr, l_KeepPlayback == DUR_ALWAYS ? ":A":":%ld", l_KeepPlayback);
-    pStr += sprintf (pStr, l_KeepRecord   == DUR_ALWAYS ? ":A":":%ld", l_KeepRecord);
-    sprintf (pStr, ":%ld", l_PlayType);
-    Log (line);
-
-    if (!l_flgPlayRecIslock)
-    {
-    /* playback or record (may already be done) */
-    if (l_KeepPlayback > 0  ||  l_KeepPlayback == DUR_ALWAYS)
-    {
-       /*
-	* A KEEP_PlAYBACK value of 1..n or "A" ANY means there was a transponder detected
-	*/
+  
+       /* append current parameters to ID */
+       pStr += sprintf (pStr, ":%ld", l_KeepPlayback);
+       pStr += sprintf (pStr, ":%ld", l_KeepRecord);
+       pStr += sprintf (pStr, ":%ld", l_PlayType);
        
-        /* start playing */
-	PlaybackRun();
+//#ifdef LOGGING
+       l_flgTwiceIDLocked = true;
+      //sprintf (pStr, "\r\n");
+  //    drvLEUART_puts (line);
+  //    drvLEUART_puts ("\n");
+//      Log(line);
+//#endif
+    }
+    else
+    {
+       pStr += sprintf (pStr, " - Audio: Is locked"); 
 
-	/* start KeepPlayback timer */
-	if (l_hdlPlayRec != NONE)
-	{
-	    if (l_KeepPlayback > 0)
-            {
-		sTimerStart (l_hdlPlayRec, l_KeepPlayback);
-            }
-	    else
-            {
-		sTimerCancel (l_hdlPlayRec);
-            }
-	}     
+//#ifdef LOGGING
+     //sprintf (pStr, "\r\n");
+  //   drvLEUART_puts (line);
+  //   drvLEUART_puts ("\n");
+//     Log(line);
+//#endif
+       
+   	//drvLEUART_sync();	// to prevent UART buffer overflow
+       /* Generate Log Message */
+       // Log ("RFID & AUDIO is locked!");
     }
-    else
-    {
-	
-        /* be sure to cancel PlayRec timer */
-	if (l_hdlPlayRec != NONE)
-	    sTimerCancel (l_hdlPlayRec);
-        
-             
-	/* it follows a KEEP_RECORD duration, except in case of DUR_ALWAYS */
-	if (l_KeepRecord > 0)
-	{
-	    /* start KeepRecord timer */
-            sTimerStart (l_hdlPlayRec, l_KeepRecord);
-            /* start record */
-	    RecordRun();
-        }
-    
-    }
-    }
-    else
-    {
 #ifdef LOGGING
-	/* Generate Log Message */
-	Log ("Playback and Record are locked");
-#endif
-    }
+    //sprintf (pStr, "\r\n");
+  //   drvLEUART_puts (line);
+  //   drvLEUART_puts ("\n");
+     Log(line);
+#endif    
+  
+       /* playback or record (may already be done) */
+       if (l_KeepPlayback > 0)
+       {
+           /*
+	    * A KEEP_PlAYBACK value of 1..n or "A" ANY means there was a transponder detected
+	    */
+       
+            if(!isAudioLocked)
+            {
+               /* start playing */
+	       PlaybackRun();
+               sTimerStart (l_hdlPlayRec, l_KeepPlayback);
+             }
+        }
+        else
+        {
+          /* be sure to cancel PlayRec timer */
+ 	  if (l_hdlPlayRec != NONE)
+          { 	
+	    /* it follows a KEEP_RECORD duration */
+	    if (l_KeepRecord > 0)
+	    {
+               if(!isAudioLocked)
+               {
+                   /* start record */
+	           RecordRun(); 
+                  /* start KeepRecord timer */
+                  sTimerStart (l_hdlPlayRec, l_KeepRecord);
+               }
+            }
+          }
+      }
 }
 
 
@@ -371,7 +426,11 @@ ID_PARM	*pID;
  ******************************************************************************/
 static void	PlayRecAction (TIM_HDL hdl)
 {
-    (void) hdl;		// suppress compiler warning "unused parameter"
+(void) hdl;		// suppress compiler warning "unused parameter"
+    
+        /*!@brief Current state of of Audio Module is locked from audio.c */
+static volatile bool	 isAudioLocked;
+isAudioLocked  = IsAudioLocked(); 
 
     /* determine current state */
     if (l_flgPlaybackRun)
@@ -379,81 +438,76 @@ static void	PlayRecAction (TIM_HDL hdl)
 	/* playback time is over playback stop */
 	l_flgPlaybackIsRun = false;
  
-        /*! Start sending a playback_stop to AUDIO module. */
-        ControlPLAYBACKSTOP();
+        /* Deactivate timer */
+	if (l_hdlPlayRec != NONE)
+	    sTimerCancel (l_hdlPlayRec);
         
-        l_flgPlayRecIslock = false;
+        /* Playback stop has been set - inform Audio module 
+         * via IsControlPlayStop */
+        l_flgAudioPlayStop = true;
+        l_flgAudioPlayRun = false;
         
-        msDelay(500);
-        
-        /* it follows a KEEP_RECORD duration, except in case of DUR_ALWAYS */
+        /* it follows a KEEP_RECORD duration */
 	if (l_KeepRecord > 0)
 	{
-	    /* start KeepRecord timer */
-	    sTimerStart (l_hdlPlayRec, l_KeepRecord);
-            /* start record */
+           /* start record */
 	    RecordRun();
-            l_flgPlaybackRun = false;
-	}
+            /* start KeepRecord timer */
+            sTimerStart (l_hdlPlayRec, l_KeepRecord);
+        }
+        l_flgPlaybackRun = false;
+        l_flgTwiceIDLocked = false;
+	
     }
     else 
     {
 	/* record is run */
 	l_flgPlaybackRun = true;
         
-        /*! Start sending a record_stop to AUDIO module. */
-        ControlRECORDSTOP();
+        /* Deactivate timer */
+        if (l_hdlPlayRec != NONE)
+	    sTimerCancel (l_hdlPlayRec);
         
-        l_flgPlayRecIslock = false;
+         /* Record stop has been set - inform Audio module 
+          * via IsControlRecStop */
+         l_flgAudioRecStop = true;
+         l_flgAudioRecRun = false;
+          l_flgTwiceIDLocked = false;
     }
 }
 
 
 /***************************************************************************//**
  *
- * @brief	PlaybackRun
+ * @brief	PlaybackRun for Control.c
  *
- * This routine initiates to playback sounds. This is done 
- * by generating messages for the UART communcication send to
- * the audio module.
- *
- * @warning
- * This function calls a blocking delay routine, therefore it must not be
- * called from interrupt context!
+ * This routine initiates to playback sounds. This is done by setting
+ * int AudioPlaybackType and l_flgAudioPlayRun. 
  *
  ******************************************************************************/
 static void	PlaybackRun (void)
 {
     l_flgPlaybackRun = true;
-   
+    
     if (! l_flgPlaybackIsRun) 
     {
         l_flgPlaybackIsRun = true;
-        
-#ifdef LOGGING
-	/* Generate Log Message */
-	Log ("PLAYBACK will started");
-#endif
        
-        /* PLAYBACK with new Playback_Type has been set - inform Audio module */
-        ControlUpdatePLAYTYPE(l_PlayType);
-        l_flgPlayRecIslock = true;
-       
+        /* Playback run with a new Playback_Type has been set - inform Audio module 
+         * via IsControlPlaybackType(), IsControlPlayRun */
+        AudioPlaybackType = l_PlayType;
+        l_flgAudioPlayRun = true;
+        l_flgAudioPlayStop = false;
     }    
 }
 
 
 /***************************************************************************//**
  *
- * @brief	RecordRun
+ * @brief	RecordRun for Control.c
  *
- * This routine initiates to record sounds. This is done
- * by generating messages for the UART communcication send to
- * the audio module.
- * 
- * @warning
- * This function calls a blocking delay routine, therefore it must not be
- * called from interrupt context!
+ * This routine initiates to record sounds. This is done by setting
+ * l_flgAudioRecRun.
  *
  ******************************************************************************/
 static void	RecordRun (void)
@@ -463,17 +517,95 @@ static void	RecordRun (void)
    if (!l_flgPlaybackIsRun)
    {
        l_flgPlaybackIsRun = false;
-       
-              
-#ifdef LOGGING
-	/* Generate Log Message */
-	Log ("Record will be started");
-#endif
         
-         /* Record has been set - inform Audio module */
-        ControlUpdateRECORD();
-        l_flgPlayRecIslock = true;
+       /* Record run has been set - inform Audio module via IsControlRecRun */
+       l_flgAudioRecRun = true;
+       l_flgAudioRecStop = false;
    }
+}
+
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if Audio Playback RUN  
+ *
+ * This routine is used to determine if playback run is currently on. See Audio.c
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module playback is on,
+ *      <i>false</i> if not.
+ *
+ ******************************************************************************/
+bool	IsControlPlayRun ()
+{
+    return l_flgAudioPlayRun;
+}
+
+
+/***************************************************************************//**
+ *
+* @brief	Determine if Audio Playback_Type   
+ *
+ * This routine is used to determine new playback_type from 1 to 9. See Audio.c
+ *
+ * @return
+ *     The value <i>1<=9</i> if the Audio module playback set.
+ *
+ ******************************************************************************/
+int	IsControlPlaybackType ()
+{
+    return AudioPlaybackType;
+}
+
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if Audio Record RUN  
+ *
+ * This routine is used to determine if record run is currently on. See Audio.c
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module record is on,
+ *      <i>false</i> if not. 
+ *
+ ******************************************************************************/
+bool	IsControlRecRun (void)
+{
+    return l_flgAudioRecRun;
+}
+
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if Audio Playback Stop  
+ *
+ * This routine is used to determine if playback stop is currently on.See Audio.c
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module playback stop is on,
+ *      <i>false</i> if not
+ *
+ ******************************************************************************/
+bool	IsControlPlayStop (void)
+{
+    return l_flgAudioPlayStop;
+}
+
+
+/***************************************************************************//**
+ *
+ * @brief	Determine if Audio Record Stop  
+ *
+ * This routine is used to determine if record stop currently on.See Audio.c
+ *
+ * @return
+ * 	The value <i>true</i> if the Audio module record stop is on,
+ *      <i>false</i> if not.
+ *
+ ******************************************************************************/
+bool	IsControlRecStop (void)
+{
+    return l_flgAudioRecStop;
 }
 
 
@@ -519,6 +651,11 @@ int	i;
  *****************************************************************************/
 void	PowerOutput (PWR_OUT output, bool enable)
 {
+  
+    /* No power enable if Power Fail is active */
+    if (enable  &&  IsPowerFail())
+       return;
+    
     /* Parameter check */
     if (output == PWR_OUT_NONE)
 	return;		// power output not assigned, nothing to be done
@@ -575,10 +712,9 @@ bool	IsPowerOutputOn (PWR_OUT output)
  * @brief	Alarm routine for Power Control
  *
  * This routine is called when one of the power alarm times has been reached.
- * The alarm number is an enum value between @ref ALARM_ON_TIME_1 and
- * @ref ALARM_OFF_TIME_5.<br>
+ * The alarm number is an enum value @ref ALARM_ON_TIME_1.<br>
  * When an RFID reader has been installed, the function decides whether to
- * call RFID_Enable(), or RFID_Disable().  If Audio moule has been configured,
+ * call RFID_Enable(), or RFID_Disable().  If Audio module has been configured,
  * this will also be switched on or off together the RFID reader.
  *
  ******************************************************************************/
@@ -596,11 +732,13 @@ int	 pwrState;
     /* RFID reader and Audio module are always switched on or off together */
     if (pwrState == PWR_ON)
     {
-        RFID_Enable();
+        l_flgAudioRfidPower = true;
+        RFIDPower_Enable();
         AudioEnable();
     }
     else
     {
+       l_flgAudioRfidPower = false;
        RFID_Disable();
        AudioDisable();
     }

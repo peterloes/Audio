@@ -1,8 +1,7 @@
 /***************************************************************************//**
  * @file
  * @brief	RFID Reader
- * @author	Ralf Gerhauser
- * @author	Peter Loes
+ * @author	Ralf Gerhauser / Peter Loes
  * @version	2020-08-07
  *
  * This module provides the functionality to communicate with the @ref
@@ -176,8 +175,8 @@ static volatile bool	l_flgRFID_On;
     /*! Flag if RFID reader is currently powered on. */
 static volatile bool	l_flgRFID_IsOn;
 
-    /*! Flag indicates if an object is present. */
-static volatile bool	l_flgObjectPresent;
+    /*! Flag indicates if an object with transponder is present. */
+static volatile bool	l_flgObjectNewID;
 
     /*! Timer handler for the ID detection timeout */
 static volatile TIM_HDL	l_hdlRFID_DetectTimeout = NONE;
@@ -196,7 +195,6 @@ static volatile uint8_t	l_State;
 
 static void RFID_DetectTimeout(TIM_HDL hdl);
 static void uartSetup(void);
-
 
 /***************************************************************************//**
  *
@@ -264,27 +262,44 @@ bool	IsRFID_Active (void)
  * module to power up and initialize the reader and the related hardware.
  * It is usually called by PowerControl().
  *
- * @see RFID_Disable(), RFID_TimedDisable(), RFID_Check()
+ * @see RFID_Disable(), RFID_Check()
  *
  ******************************************************************************/
 void RFID_Enable (void)
 {
 
-     /* set flag to notify there is an object present */
-    l_flgObjectPresent = true;
-    
-    /* initiate power-on of the RFID reader */
-    l_flgRFID_On = true;
-
-      /* re-trigger "new run" flag */
+  /* set flag to notify there is an transpondered object present */
+    if (l_flgObjectNewID)
+    {
+        if (l_hdlRFID_DetectTimeout != NONE)
+        sTimerCancel(l_hdlRFID_DetectTimeout);
+        l_flgObjectNewID = false;
+    }
+    else
+    {
+        if (l_hdlRFID_DetectTimeout != NONE)
+        sTimerStart(l_hdlRFID_DetectTimeout, g_RFID_DetectTimeout);
+    }
+      
+    /* re-trigger "new run" flag */
     l_flgNewRun = true;
     DBG_PUTS(" DBG RFID_Enable: setting l_flgNewRun=1\n");
     
     /* (re-)start timer for RFID timeout detection */
     DBG_PUTS(" DBG RFID_Enable: starting Detect Timeout\n");
-    if (l_hdlRFID_DetectTimeout != NONE)
-    sTimerStart (l_hdlRFID_DetectTimeout, g_RFID_DetectTimeout);
+}
 
+/***************************************************************************//**
+ *
+ * @brief	RFID Power enable
+ *
+ * @see This routine immediately enables the RFID Power.
+ *
+ ******************************************************************************/
+void RFIDPower_Enable (void)
+{
+   /* initiate power-on of the RFID reader */
+   l_flgRFID_On = true;
 }
 
 
@@ -294,13 +309,13 @@ void RFID_Enable (void)
  *
  * This routine immediately disables the RFID reader.
  *
- * @see RFID_Enable(), RFID_TimedDisable(), RFID_Check()
+ * @see RFID_Enable(), RFID_Check()
  *
  ******************************************************************************/
 void RFID_Disable (void)
 {
-      /* no object present, clear flag */
-    l_flgObjectPresent = false;
+      /* no transpondered object is present, clear flag */
+    l_flgObjectNewID = false;
 
     /* be sure to cancel timeout timer */
     if (l_hdlRFID_DetectTimeout != NONE)
@@ -326,7 +341,7 @@ void RFID_Disable (void)
  *
  * This routine returns the current power state of the RFID reader.
  *
- * @see RFID_Enable(), RFID_Disable(), RFID_TimedDisable(), RFID_Check()
+ * @see RFID_Enable(), RFID_Disable(), RFID_Check()
  *
  ******************************************************************************/
 bool	IsRFID_Enabled (void)
@@ -433,9 +448,13 @@ void	RFID_Check (void)
 
     if (l_flgNewID)
     {
-	l_flgNewID = false;
-
-	/* New transponder ID has been set - inform control module */
+ 
+       l_flgNewID = false;
+     
+            if (l_hdlRFID_DetectTimeout != NONE)
+	sTimerCancel (l_hdlRFID_DetectTimeout);
+        
+        /* New transponder ID has been set - inform control module */
 	//Log ("ControlUpdateID(%s) - START", g_Transponder);
 	ControlUpdateID(g_Transponder);
 	//Log ("ControlUpdateID(%s) - END", g_Transponder);
@@ -482,22 +501,19 @@ static void RFID_DetectTimeout(TIM_HDL hdl)
 {
     (void) hdl;		// suppress compiler warning "unused parameter"
 
-    if (l_flgObjectPresent)
-    {
-      	DBG_PUTS(" DBG RFID_DetectTimeout: Detect Timeout over, set UNKNOWN\n");
-        
-	strcpy (g_Transponder, "UNKNOWN");
+    DBG_PUTS(" DBG RFID_DetectTimeout: Detect Timeout over, set UNKNOWN\n");
+    
+    strcpy (g_Transponder, "UNKNOWN");
 
-#if defined(LOGGING)  &&  ! defined (MOD_CONTROL_EXISTS)
+#if defined(LOGGING)  &  ! defined (MOD_CONTROL_EXISTS)
 	/* Generate Log Message if there is no external module to handle this */
 	Log ("Transponder: %s", g_Transponder);
 #endif
-	/* Set flag to notify new transponder ID */
-	l_flgNewID = true;
         
-         /* no object present, clear flag */
-        l_flgObjectPresent = false;
-    }
+    /* Set flag to notify new transponder ID */
+    l_flgNewID = true;
+        
+  
 }
 
 
@@ -694,11 +710,7 @@ int	 i, pos;
 	}
 	newTransponder[16] = '\0';
 
-	/* (re-)start timer for RFID timeout detection */
-	if (l_flgObjectPresent  &&  l_hdlRFID_DetectTimeout != NONE)
-	   sTimerStart (l_hdlRFID_DetectTimeout, g_RFID_DetectTimeout);
-
-	/* see if a new run - or Transponder Number has changed */
+        /* see if a new run - or Transponder Number has changed */
 	if (l_flgNewRun  ||  strcmp (newTransponder, g_Transponder))
 	{
 	    l_flgNewRun = false;	// clear flag
@@ -712,6 +724,9 @@ int	 i, pos;
 #endif
 	    /* Set flag to notify new transponder ID */
 	    l_flgNewID = true;
+            
+            /* Set flag to notify there is an transpondered object */
+	    l_flgObjectNewID = true;
 	}
     }
 }

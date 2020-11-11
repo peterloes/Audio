@@ -22,6 +22,7 @@ Revision History:
 #include "PowerFail.h"
 #include "AlarmClock.h"
 #include "RFID.h"
+#include "LEUART.h"
 #include "Logging.h"
 #include "Control.h"
 
@@ -41,8 +42,9 @@ Revision History:
     /*!@brief Bit mask what Light Barriers are active. */
 volatile uint32_t  g_LB_ActiveMask;
 
-    /*!@brief Light barrier filter duration in seconds (0=inactive). */
-int32_t  g_LB_FilterDuration = 0;
+    /*!@brief Light barrier filter duration in seconds 
+              g_LB_FilterDuration = 0 (0=inactive). */
+uint32_t  g_LB_FilterDuration;
 
 /*================================ Local Data ================================*/
 
@@ -119,8 +121,8 @@ void	LB_Init (void)
 void	LB_Handler (int extiNum, bool extiLvl, uint32_t timeStamp)
 {
 uint32_t  prevActiveMask;
-static bool prevPowerFail;
-bool	isPowerFail;
+static bool prevPowerFail, prevAudioRfidOn;
+bool	isPowerFail, isAudioRfidOn;
 
     /* Save the current state of activity mask before changing it */
     prevActiveMask = g_LB_ActiveMask;
@@ -137,16 +139,20 @@ bool	isPowerFail;
     
   /* Get current state of power-fail and feeder */
     isPowerFail = IsPowerFail();
+    isAudioRfidOn  = IsAudioRfidOn();
+    
     
 #if MOD_DEBUG
     char tmpBuf[90];
     sprintf (tmpBuf, " DBG LB_Handler: prevPowerFail=%d isPowerFail=%d"
-		     " prevPowerFail, isPowerFail);
+		      " prevAudioRfidOn=%d isAudioRfidOn=%d\n",
+                     prevPowerFail, isPowerFail, prevAudioRfidOn, isAudioRfidOn);                       
     DBG_PUTS(tmpBuf);
 #endif        
     
     /* Detect if we recover from power-fail or feeder off */
-    if (  prevPowerFail  &&  ! isPowerFail)
+    if ((  prevPowerFail  &&  ! isPowerFail)
+    || (! prevAudioRfidOn   &&    isAudioRfidOn))  
     {
 	/*
 	 * There was a power-fail, or the feeder has been switched off.
@@ -158,6 +164,7 @@ bool	isPowerFail;
     
     /* Save states for the next time */
     prevPowerFail = isPowerFail;
+    prevAudioRfidOn  = isAudioRfidOn;
    
     
     /* If one or more Light Barriers are active, LB Filter Output is true */
@@ -165,18 +172,19 @@ bool	isPowerFail;
     {
 	/*
 	 * Check if filter state is already set and for power-fail
+      	 * and if is AudioRfid in ON mode
 	 */
-	if (! l_LB_FilterOutput  &&  ! isPowerFail)
+	if (! l_LB_FilterOutput  &&  ! isPowerFail &&  isAudioRfidOn)
 	{
 	    l_LB_FilterOutput = true;
 	    DBG_PUTS(" DBG LB_Handler: setting l_LB_FilterOutput=1\n");
-	    RFID_Enable();		// set only l_flgObjectPresent
+	    RFID_Enable();		
 	}
     }
     else
     {
    
-         /*
+        /*
 	 * Light Barriers are (all) inactive. Check if inactivity happened now.
 	 */
 	if (prevActiveMask != 0)
@@ -191,7 +199,7 @@ bool	isPowerFail;
 		/* (re-)start timer to switch-off */
 		if (l_hdlLB_Filter != NONE)
 		    sTimerStart (l_hdlLB_Filter, g_LB_FilterDuration);
-	    }
+    	    }
 	    else
 	    {
 		/* Cancel possibly running timer */
@@ -221,4 +229,5 @@ static void InitiatePowerOff(void)
 {
     l_LB_FilterOutput = false;	// clear filter flag
     DBG_PUTS(" DBG InitiatePowerOff: setting l_LB_FilterOutput=0\n");
+    drvLEUART_sync();
 }

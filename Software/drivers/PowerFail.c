@@ -8,8 +8,8 @@
  *
  ****************************************************************************//*
 Revision History:
+2020-05-12,rage	Call CheckAlarmTimes() after Power Fail has disappeared.
 2020-01-22,rage	PowerFailCheck: call BatteryChangeTrigger() when power good.
-2019-07-17,rage	Call CheckAlarmTimes() after Power Fail has disappeared.
 2017-01-31,rage	Initial version.
 */
 

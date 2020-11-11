@@ -312,6 +312,7 @@ int8_t	on_hour, on_min, off_hour, off_min;
     if (g_PowerUpTime == 0)
 	return;		// no valid time set yet, abort
     
+    
     /* Check all power-related alarms */
     for (i = 0;  i < NUM_POWER_ALARMS;  i++)
     {
@@ -326,13 +327,15 @@ int8_t	on_hour, on_min, off_hour, off_min;
 	||  (l_Alarm[alarm_off].Function == NULL))
           continue;		// skip these alarms
         
-            /* Get current time */
-       time = g_CurrDateTime.tm_hour * 60 + g_CurrDateTime.tm_min;
+        
+          /* Get current time */
+    time = g_CurrDateTime.tm_hour * 60 + g_CurrDateTime.tm_min;
 #ifdef LOGGING
     if (i == 0)
     Log ("Checking alarm times against current time %02d:%02d",
 	 g_CurrDateTime.tm_hour, g_CurrDateTime.tm_min);
-#endif
+#endif    
+              
            /* Get alarm times */
 	AlarmGet(alarm_on, &on_hour,  &on_min);
 	on_time = on_hour * 60 + on_min;

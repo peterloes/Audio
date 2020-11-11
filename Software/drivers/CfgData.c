@@ -10,6 +10,8 @@
  *
  ****************************************************************************//*
 Revision History:
+2019-06-01,rage	- Bugfix in getString: Corrected pointer increment and check
+		  for comment or end of line.
 2018-11-13,rage	- The list of Transponder IDs is no more kept in memory, instead
 		  the configuration file is read for each compare.  This allows
 		  a higher number of IDs to be used (no memory limitations).
@@ -153,9 +155,10 @@ UINT	 cnt = 0;	// number of bytes read
 char	 line[200];	// line buffer (resides on stack)
 
 
+  
     /* Flush Log Buffer and keep SD-Card power on */
     LogFlush(true);
-
+    
     /* Log reading of the configuration file */
     if (transponderID == NULL)
     {
@@ -174,14 +177,14 @@ char	 line[200];	// line buffer (resides on stack)
     if (res != FR_OK)
     {
 	LogError ("CfgRead: FILE OPEN - Error Code %d", res);
-	l_flgDataLoaded = false;
+        l_flgDataLoaded = false;
 	l_fh.fs = NULL;		// invalidate file handle
 
 	/* Power off the SD-Card Interface */
 	MICROSD_PowerOff();
 	return NULL;
     }
-
+    
     /* Read configuration file line by line */
     for (lineNum = 1;  ;  lineNum++)
     {
@@ -425,16 +428,8 @@ const char **ppEnumName;
 	    break;
 
 
-	case CFG_VAR_TYPE_DURATION:	// 0 to n seconds, or A for always
-	    if (*pStr == 'A')
-	    {
-		duration = DUR_ALWAYS;	// "A" means "always"
-	    }
-	    else
-	    {
-		duration = getInteger (&pStr, lineNum, varIdx, 0);
-	    }
-
+	case CFG_VAR_TYPE_DURATION:	// 0 to n seconds
+	    duration = getInteger (&pStr, lineNum, varIdx, 0);
 	    *((int32_t *)l_pCfgVarList[varIdx].pData) = duration;
 	    break;
 
@@ -447,14 +442,14 @@ const char **ppEnumName;
 	    ID_Parm.PlayType = DUR_INVALID;
 
 	    /* get transponder ID */
-	    for (pStrBegin = pStr;  isalnum((int)*pStr);  pStr++)
-		;
-
-	    /* must be followed by ':', space, or EOS */
+	    for (pStrBegin = pStr;  isalnum((int)*pStr);  pStr++);
+            
+            /* must be followed by ':', space, or EOS */
 	    if (*pStr != ':'  &&  ! isspace((int)*pStr)  &&  *pStr != EOS)
-		break;			// generate error message
-
-	    /* if parameter <transponderID> is specified, compare it */
+	        break;			// generate error message
+                   
+            
+            /* if parameter <transponderID> is specified, compare it */
 	    if (transponderID != NULL)
 	    {
 		saveChar = *pStr;	// save character
@@ -473,13 +468,7 @@ const char **ppEnumName;
 	    {
 		*(pStr++) = EOS;	// terminate transponder ID string
 
-		/* field may be "A", or a duration in seconds, or empty */
-		if (*pStr == 'A')
-		{
-		    pStr++;
-	            ID_Parm.KeepPlayback = DUR_ALWAYS;	// "A" means "always"
-		}
-		else if (isdigit((int)*pStr))
+		if (isdigit((int)*pStr))
 		{
 		    duration = getInteger (&pStr, lineNum, varIdx, 0);
 	            ID_Parm.KeepPlayback = duration;
@@ -491,13 +480,8 @@ const char **ppEnumName;
 	    {
 		pStr++;
 
-		/* field may be "A", or a duration in seconds, or empty */
-		if (*pStr == 'A')
-		{
-		    pStr++;
-		    ID_Parm.KeepRecord = DUR_ALWAYS;	// "A" means "always"
-		}
-		else if (isdigit((int)*pStr))
+		/* duration in seconds, or empty */
+	        if (isdigit((int)*pStr))
 		{
 		    duration = getInteger (&pStr, lineNum, varIdx, 0);
 		    ID_Parm.KeepRecord = duration;
@@ -558,10 +542,11 @@ const char **ppEnumName;
 	    break;
            
 	case CFG_VAR_TYPE_INTEGER:	// a positive integer variable 0..n
-           for (value = 0;  isdigit((int)*pStr);  pStr++)
-		value = value * 10 + (long)*pStr - '0';
+            value = getInteger (&pStr, lineNum, varIdx, value);
+	    if (value < 0)
+		return NULL;		// ERROR
 
-	    *((uint32_t *)l_pCfgVarList[varIdx].pData) = value;
+	    *((int32_t *)l_pCfgVarList[varIdx].pData) = value;
 	    break;
             
         case CFG_VAR_TYPE_ENUM_1:	// ENUM types
@@ -569,6 +554,7 @@ const char **ppEnumName;
 	case CFG_VAR_TYPE_ENUM_3:
 	case CFG_VAR_TYPE_ENUM_4:
 	case CFG_VAR_TYPE_ENUM_5:
+            
             /* get enum string */
 	    pStrBegin = getString(&pStr);
 	    if (pStrBegin == NULL)
@@ -636,6 +622,26 @@ static bool skipSpace (char **ppStr)
     return (**ppStr == EOS ? true : false);
 }
 
+// returns true if end of string has been reached
+static int32_t getInteger (char **ppStr, int lineNum, int varIdx, int32_t minVal)
+{
+int32_t value;
+
+    /* convert string to integer value */
+    for (value = 0;  isdigit((int)**ppStr);  (*ppStr)++)
+	value = value * 10 + (long)**ppStr - '0';
+
+    /* verify allowed minimum value */
+    if (value < minVal)
+    {
+	LogError ("Config File - Line %d, %s=%ld: Value must be >= %ld",
+		  lineNum, l_pCfgVarList[varIdx].name, value);
+	value = (-1);
+    }
+
+    return value;
+}
+
 
 // returns pointer to terminated string, or NULL in case of error
 static char *getString (char **ppStr)
@@ -662,26 +668,6 @@ char	*pStrBegin = *ppStr;
 
     /* return begin of the string or NULL for error */
     return pStrBegin;
-}
-
-// returns true if end of string has been reached
-static int32_t getInteger (char **ppStr, int lineNum, int varIdx, int32_t minVal)
-{
-int32_t value;
-
-    /* convert string to integer value */
-    for (value = 0;  isdigit((int)**ppStr);  (*ppStr)++)
-	value = value * 10 + (long)**ppStr - '0';
-
-    /* verify allowed minimum value */
-    if (value < minVal)
-    {
-	LogError ("Config File - Line %d, %s=%ld: Value must be >= %ld",
-		  lineNum, l_pCfgVarList[varIdx].name, value);
-	value = (-1);
-    }
-
-    return value;
 }
 
 
@@ -732,8 +718,7 @@ char	 line[200];
 char	*pStr;
 int	 i, idx;
 int8_t	 hour, minute;
-int32_t	 duration;
-uint32_t value;
+int32_t	 duration, value;
 ALARM_TIME *pAlarm;
 ID_PARM	*pID;
 const char **ppEnumName;
@@ -785,8 +770,6 @@ const char **ppEnumName;
 		duration = *((int32_t *)l_pCfgVarList[i].pData);
 		if (duration == DUR_INVALID)
 		    pStr += sprintf (pStr, "invalid");
-		else if (duration == DUR_ALWAYS)
-		    pStr += sprintf (pStr, "ALWAYS");
 		else
 		    pStr += sprintf (pStr, "%ld", duration);
 		break;
@@ -860,8 +843,6 @@ const char **ppEnumName;
 	    duration = pID->KeepPlayback;
 	    if (duration == DUR_INVALID)
 		pStr += sprintf (pStr, "default");
-	    else if (duration == DUR_ALWAYS)
-		pStr += sprintf (pStr, " ALWAYS");
 	    else
 		pStr += sprintf (pStr, "%7ld", duration);
 
@@ -869,8 +850,6 @@ const char **ppEnumName;
 	    duration = pID->KeepRecord; 
 	    if (duration == DUR_INVALID)
 		pStr += sprintf (pStr, "default");
-	    else if (duration == DUR_ALWAYS)
-		pStr += sprintf (pStr, " ALWAYS");
 	    else
 		pStr += sprintf (pStr, "%7ld", duration);
 
@@ -878,8 +857,6 @@ const char **ppEnumName;
 	    duration = pID->PlayType;
 	    if (duration == DUR_INVALID)
 		pStr += sprintf (pStr, "default");
-	    else if (duration == DUR_ALWAYS)
-		pStr += sprintf (pStr, " ALWAYS");
 	    else
 		pStr += sprintf (pStr, "%7ld", duration);
 

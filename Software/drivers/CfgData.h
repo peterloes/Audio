@@ -38,7 +38,6 @@ typedef enum
 
     /*!@brief Special states for @ref CFG_VAR_TYPE_DURATION. */
 #define DUR_INVALID (-1)	// entry is invalid
-#define DUR_ALWAYS  (-2)	// "A" means "always"
 
     /*!@brief Structure to define configuration variables. */
 typedef struct
@@ -56,7 +55,7 @@ typedef struct _ID_PARM
 {
     struct _ID_PARM *pNext;	// pointer to next ID, or NULL
     int32_t  KeepPlayback;	// individual KEEP_PLAYBACK duration
-    int32_t  KeepRecord;	// individual KEEP_RECORDD duration
+    int32_t  KeepRecord;	// individual KEEP_RECORD duration
     int32_t  PlayType;	        // individual PLAYBACK_TYPE
     char     ID[];		// ID string follows
 } ID_PARM;
