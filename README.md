@@ -28,12 +28,13 @@ as well as in laboratory settings
   "ANY" means there was a transponder detected, but its ID is not listed.
 
   "UNKNOWN" means that NO transponder could be detected
+
+
+![My image](https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/2_Electronic_board.jpg)
+
 -	Low power consumption and specific data collection lead to long lasting collection periods
 -	Applicable world-wide due to its compatibility with different types of radio clock receivers 
 -	Data-transfer to external devices, such as personal computers
- 
-![My image](https://github.com/peterloes/Audio/blob/master/Getting_Started_Tutorial/2_Electronic_board.jpg)
-
 - Time Synchronization with atomic clock once a day to ensure optimal data quality
 - Application Current Control twice a day
 - Forecast for Battery-Change implemented
