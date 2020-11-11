@@ -1,140 +1,104 @@
-00000000-000000.000 MOMO AUDIO V1.0 (Oct 15 2020 16:18:16)
-00000000-000000.000 Using HFXO Clock at 32.000MHz
-00000000-000000.000 DCF77: Enabled
-20140101-120000.000 LB2:off
-20140101-120000.000 LB1:off
-20140101-120000.000 Power-Fail: Received interrupt (POWER GOOD)
-20140101-120000.001 SD-Card Inserted
-20140101-120000.083 SD-Card Initialized
-20140101-120000.083 SD-Card File System mounted
-20140101-120000.337 SD-Card 1855MB free
-20140101-120000.338 Using Filename BOX0345.TXT
-20140101-120000.366 MCU: EFM32G230F128 HW-ID: 0x2401B5065AD2F4DB
-20140101-120000.386 Battery Controller Type is "ATMEL" at address 0x0A
-20140101-120000.414 Battery Manufacturer Name : Dynamis
-20140101-120000.439 Battery Device Name       : BMS2-4_V0.3
-20140101-120000.464 Battery Device Type       : Lithium-Ion
-20140101-120000.474 Battery Serial Number     : 0x0008
-20140101-120000.485 Battery Design Voltage    : 3.300V per cell
-20140101-120000.495 Battery Design Capacity   : 7500mAh
-20140101-120000.505 Battery Full Charge Capac.: 8421mAh
-20140101-120001.240 Battery Remaining Capacity: 3246mAh
-20140101-120001.252 Battery Runtime to empty  : 19d  7h 42m
-20140101-120001.262 Battery Actual Voltage    : 13.2V
-20140101-120001.273 Battery Actual Current    : 7mA
-20140101-120001.519 Reading Configuration File CONFIG.TXT
-20140101-120002.294 Initializing RFID reader of type SR for Power Output UA1
-20140101-120002.294 Initializing Audio for Power Output UA2
-20140101-120002.295 Audio Volume control value VC is 30
-20140101-120002.295 Audio Choose a storage device ST is 0
-20140101-120002.296 Audio Choose audio-recording input mode IM is 0
-20140101-120002.296 Audio recording quality (bit rate) mode RQ is 0
-20140101-120150.778 DCF77: Time Frame 1 is 20201015-161400
-20140101-120250.774 DCF77: Time Frame 2 is 20201015-161500
-20201015-161500.775 DCF77: Time Synchronization 16:15:00 (MESZ)
-20201015-161500.776 DCF77: Changing time zone from MEZ to MESZ
-20201015-161500.778 Initial Time Synchronisation
-20201015-161500.778 Checking alarm times against current time 16:15
-20201015-161500.779 - Alarm 1 (08:30 - 17:00) is ON
-20201015-161500.000 DCF77: Disabled
-20201015-161500.001 RFID is powered ON
-20201015-161500.001 Power Output UA1 enabled
-20201015-161500.001 Audio module is powered ON
-20201015-161500.002 Power Output UA2 enabled
-20201015-161501.022 Audio: MicroSD card inserted
-20201015-161501.023 Waiting 15s for Audio module being ready to accept commands...
-20201015-161511.000 Transponder: UNKNOWN:10:0:1
-20201015-161511.500 Audio: Playback and Record are locked
-20201015-161517.000 Audio should be ready, retrieving hard- and software information
-20201015-161517.009 Audio: Work Status Paused
-20201015-161517.125 Audio: Total file numbers 7
-20201015-161517.125 Audio: Next Record file is [R008.wav]
-20201015-161517.126 Audio: Waiting up to 50s for capacity left (microSD Card 32GB)
-20201015-161555.331 Audio: Capacity left (Mb) 30418
-20201015-161555.371 Audio: Volume 30 is executed successfully
-20201015-161555.449 Audio: MicroSD card is supported
-20201015-161555.484 Audio: Input Mode 0 connected with MIC
-20201015-161555.519 Audio: Recording quality 0 is 128 Kbps
-20201015-161555.519 Audio module is operational now
-20201015-161635.099 LB1:ON
-20201015-161635.206 LB2:ON
-20201015-161635.582 LB1:off
-20201015-161635.582 LB2:off
-20201015-161635.687 LB1:ON
-20201015-161635.689 LB2:ON
-20201015-161635.850 LB2:off
-20201015-161635.902 LB1:off
-20201015-161646.000 Transponder: UNKNOWN:10:0:1
-20201015-161646.574 Audio: Playback ON [P001.x]
-20201015-161646.574 Audio: Playback and Record are locked
-20201015-161657.039 Audio: Playback off
-20201015-161657.039 Audio: Playback and Record are unlocked
-20201015-161712.000 SD-Card Removed
-20201015-161742.000 SD-Card Inserted
-20201015-161742.082 SD-Card Initialized
-20201015-161742.082 SD-Card File System mounted
-20201015-161742.335 SD-Card 1855MB free
-20201015-161742.337 Media Change: BOX0345.TXT -> BOX0345.TXT
-20201015-161742.364 MCU: EFM32G230F128 HW-ID: 0x2401B5065AD2F4DB
-20201015-161742.374 Battery Controller Type is "ATMEL" at address 0x0A
-20201015-161742.401 Battery Manufacturer Name : Dynamis
-20201015-161742.426 Battery Device Name       : BMS2-4_V0.3
-20201015-161742.451 Battery Device Type       : Lithium-Ion
-20201015-161742.462 Battery Serial Number     : 0x0008
-20201015-161742.472 Battery Design Voltage    : 3.300V per cell
-20201015-161742.482 Battery Design Capacity   : 7500mAh
-20201015-161742.493 Battery Full Charge Capac.: 8421mAh
-20201015-161742.598 LB2:off
-20201015-161742.598 LB1:off
-20201015-161743.164 Battery Remaining Capacity: 3245mAh
-20201015-161743.176 Battery Runtime to empty  :  3d 15h 42m
-20201015-161743.187 Battery Actual Voltage    : 13.2V
-20201015-161743.197 Battery Actual Current    : 37mA
-20201015-161743.423 Power Output UA1 disabled
-20201015-161743.424 RFID is powered off
-20201015-161743.424 Power Output UA2 disabled
-20201015-161743.424 Audio module is powered off
-20201015-161743.450 Reading Configuration File CONFIG.TXT
-20201015-161744.414 RFID is powered off
-20201015-161744.414 Initializing RFID reader of type SR for Power Output UA1
-20201015-161744.414 Audio module is powered off
-20201015-161744.415 Initializing Audio for Power Output UA2
-20201015-161744.415 Audio Volume control value VC is 30
-20201015-161744.416 Audio Choose a storage device ST is 0
-20201015-161744.416 Audio Choose audio-recording input mode IM is 0
-20201015-161744.416 Audio recording quality (bit rate) mode RQ is 0
-20201015-161744.511 Checking alarm times against current time 16:17
-20201015-161744.512 - Alarm 1 (08:30 - 17:00) is ON
-20201015-161744.512 RFID is powered ON
-20201015-161744.513 Power Output UA1 enabled
-20201015-161744.513 Audio module is powered ON
-20201015-161744.513 Power Output UA2 enabled
-20201015-161745.533 Audio: MicroSD card inserted
-20201015-161745.534 Waiting 15s for Audio module being ready to accept commands...
-20201015-161755.000 Transponder: UNKNOWN:10:10:1
-20201015-161755.500 Audio: Playback and Record are locked
-20201015-161801.000 Audio should be ready, retrieving hard- and software information
-20201015-161801.010 Audio: Work Status Paused
-20201015-161801.127 Audio: Total file numbers 7
-20201015-161801.127 Audio: Next Record file is [R008.wav]
-20201015-161801.128 Audio: Waiting up to 50s for capacity left (microSD Card 32GB)
-20201015-161839.332 Audio: Capacity left (Mb) 30418
-20201015-161839.373 Audio: Volume 30 is executed successfully
-20201015-161839.449 Audio: MicroSD card is supported
-20201015-161839.485 Audio: Input Mode 0 connected with MIC
-20201015-161839.519 Audio: Recording quality 0 is 128 Kbps
-20201015-161839.520 Audio module is operational now
-20201015-161842.071 LB1:ON
-20201015-161842.232 LB2:ON
-20201015-161842.447 LB2:off
-20201015-161842.499 LB1:off
-20201015-161853.000 Transponder: UNKNOWN:10:10:1
-20201015-161853.573 Audio: Playback ON [P001.x]
-20201015-161853.574 Audio: Playback and Record are locked
-20201015-161904.038 Audio: Playback off
-20201015-161904.038 Audio: Playback and Record are unlocked
-20201015-161905.061 Audio: Record ON [R008.wav]
-20201015-161905.062 Audio: Playback and Record are locked
-20201015-161915.220 Audio: Record off
-20201015-161915.220 Audio: Playback and Record are unlocked
-20201015-161917.000 SD-Card Removed
+20140101-120123.088 LB1:off
+20140101-120123.577 LB2:off
+20140101-120123.578 LB1:off
+20140101-120311.183 DCF77: Time Frame 1 is 20201111-100900
+20140101-120411.183 DCF77: Time Frame 2 is 20201111-101000
+20201111-101000.185 DCF77: Time Synchronization 10:10:00 (MEZ)
+20201111-101000.186 Initial Time Synchronisation
+20201111-101000.187 Checking alarm times against current time 10:10
+20201111-101000.188 - Alarm 1 (08:30 - 16:30) is ON
+20201111-101000.000 DCF77: Disabled
+20201111-101000.001 RFID is powered ON
+20201111-101000.001 Power Output UA1 enabled
+20201111-101000.001 Audio is powered ON
+20201111-101000.002 Power Output UA2 enabled
+20201111-101001.073 Audio: MicroSD card inserted
+20201111-101001.074 Waiting 5s for Audio module being ready to accept commands...
+20201111-101007.000 Audio should be ready, retrieving hard- and software information
+20201111-101007.011 Audio: Work Status Paused
+20201111-101007.155 Audio: Total file numbers 143 (Includes 5 playback files)
+20201111-101007.155 Audio: Next Record file is [R139.wav]
+20201111-101007.156 Audio: Waiting up to 50s for capacity left (microSD Card 32GB)
+20201111-101045.368 Audio: Capacity left (Mb) 30386
+20201111-101045.401 Audio: Volume 23 is executed successfully
+20201111-101045.470 Audio: MicroSD card is supported
+20201111-101045.505 Audio: Input Mode connected with MIC
+20201111-101045.540 Audio: Recording quality is 128 Kbps
+20201111-101045.541 Audio module is operational now
+20201111-101057.564 LB1:ON
+20201111-101057.649 Transponder: 4B76C4B43A6F0001:20:0:2
+20201111-101057.650 Transponder: 4B76C4B43A6F0001 - Audio: Is locked
+20201111-101057.739 Audio: Playback ON [P002.x]
+20201111-101058.094 LB1:off
+20201111-101104.348 LB1:ON
+20201111-101104.509 LB2:ON
+20201111-101105.047 LB2:off
+20201111-101105.099 LB1:off
+20201111-101105.257 LB1:ON
+20201111-101105.311 LB2:ON
+20201111-101105.471 LB1:off
+20201111-101105.471 LB2:off
+20201111-101118.039 Audio: Playback off
+20201111-101126.304 LB1:ON
+20201111-101126.359 LB2:ON
+20201111-101126.429 Transponder: A159D99B16900001:20:0:9
+20201111-101126.430 Transponder: A159D99B16900001 - Audio: Is locked
+20201111-101126.466 LB2:off
+20201111-101126.529 Audio: Playback ON [P003.x]
+20201111-101126.571 LB1:off
+20201111-101147.037 Audio: Playback off
+20201111-101152.772 LB1:ON
+20201111-101152.825 LB1:off
+20201111-101152.878 LB1:ON
+20201111-101152.911 Transponder: D2ECE7D001AF0001:20:20:1
+20201111-101152.912 Transponder: D2ECE7D001AF0001 - Audio: Is locked
+20201111-101152.983 LB1:off
+20201111-101153.006 Audio: Playback ON [P001.x]
+20201111-101153.036 LB1:ON
+20201111-101153.089 LB1:off
+20201111-101159.033 LB1:ON
+20201111-101159.140 LB2:ON
+20201111-101159.354 LB1:off
+20201111-101159.354 LB2:off
+20201111-101159.616 LB1:ON
+20201111-101159.671 LB2:ON
+20201111-101159.778 LB2:off
+20201111-101159.830 LB1:off
+20201111-101201.964 Transponder: 39D0000000008001 - Audio: Is locked
+20201111-101201.976 LB1:ON
+20201111-101202.030 LB2:ON
+20201111-101202.191 LB2:off
+20201111-101202.243 LB1:off
+20201111-101204.285 LB1:ON
+20201111-101204.552 LB2:ON
+20201111-101204.819 LB1:off
+20201111-101204.820 LB2:off
+20201111-101205.553 LB1:ON
+20201111-101205.767 LB2:ON
+20201111-101205.928 LB2:off
+20201111-101205.980 LB1:off
+20201111-101206.137 LB1:ON
+20201111-101206.192 LB2:ON
+20201111-101206.245 LB2:off
+20201111-101206.297 LB1:off
+20201111-101213.038 Audio: Playback off
+20201111-101214.123 Audio: Record ON [R139.wav]
+20201111-101234.270 Audio: Record off
+20201111-101742.426 LB1:ON
+20201111-101742.428 LB2:ON
+20201111-101742.691 LB1:off
+20201111-101742.692 LB2:off
+20201111-101742.846 LB1:ON
+20201111-101742.900 LB2:ON
+20201111-101743.057 LB1:off
+20201111-101743.058 LB2:off
+20201111-101746.818 LB1:ON
+20201111-101746.872 LB2:ON
+20201111-101746.944 Transponder: D2ECE7D001AF0001:20:20:1
+20201111-101747.029 LB1:off
+20201111-101747.030 LB2:off
+20201111-101747.040 Audio: Playback ON [P001.x]
+20201111-101807.036 Audio: Playback off
+20201111-101807.648 Audio: Record ON [R140.wav]
+20201111-101828.261 Audio: Record off
+20201111-101934.565 LB1:ON
