@@ -89,8 +89,8 @@ typedef enum
     AUDIO_STATE_OFF,		 //!<   0: Audio system is OFF
     AUDIO_STATE_POWER_ON,	 //!<   1: Audio system is powered on
     AUDIO_GET_WORK_STATUS,       //!<   2: Get Audio work status
-    AUDIO_GET_FILE_NUMBERS,      //!<   3: Get Total file numbers
-    AUDIO_GET_SPACE_LEFT,        //!<   4: Get Space Left in the storage device 
+    AUDIO_GET_SPACE_LEFT,        //!<   3: Get Space Left in the storage device 
+    AUDIO_GET_FILE_NUMBERS,      //!<   4: Get Total file numbers
     AUDIO_STATE_SEND_VC,         //!<   5: Send Volume Level Parameter [xx]
     AUDIO_STATE_SEND_ST,         //!<   6: Send Storage Device Parameter [x]  
     AUDIO_STATE_SEND_IM,         //!<   7: Send Input Mode Parameter [x]
@@ -714,7 +714,7 @@ AUDIO_STATE	startState;
 #ifdef LOGGING
 	    Log ("Audio should be ready, sending configuration values");
 #endif
-	    startState = AUDIO_STATE_SEND_VC;
+	    startState = AUDIO_GET_FILE_NUMBERS;
 
 	}
 	l_flgTxComplete = true;
@@ -778,15 +778,15 @@ int  checksum_int;
        case AUDIO_GET_WORK_STATUS:  // 4.4.2 Current work status (send)
             sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xC2, 0xC5, 0x7E);
             break;
-    
+       
+        case AUDIO_GET_SPACE_LEFT:  // 4.4.9 Space left in the storage device
+            sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xCE, 0xD1, 0x7E);
+            break;
+            
        case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers on SD card or USB flash (send)
             sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xC5, 0xC8, 0x7E);
             break;
 
-       case AUDIO_GET_SPACE_LEFT:  // 4.4.9 Space left in the storage device
-            sprintf(buffer, "%c%c%c%c%c", 0x7E, 0x03, 0xCE, 0xD1, 0x7E);
-            break;
-             
        case AUDIO_STATE_SEND_VC:    // 4.3.9. Volume control 1 to 31 (send)
             if (g_AudioCfg_VC != 0)
             {
@@ -1051,6 +1051,7 @@ static void CheckAudioData(void)
                  if (strncmp(l_RxBuffer, "Â", 2) == 0) // 0x03: Paused
                  {
                     Log ("Audio: Work Status Paused");
+                    Log ("Audio: Waiting up to 50s for capacity left (µSD 32GB)");  
                     AudioSendCmdSeq(l_State+1);
                  }
                  if (strncmp(l_RxBuffer, "Â", 2) == 0) // 0x04: Recording
@@ -1076,43 +1077,8 @@ static void CheckAudioData(void)
               l_flgComCompleted = true;
           }
           break;
- 
-        case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers in root directory 0xC5 (answer)
-          if (strncmp(l_RxBuffer, "Å", 1) == 0) // tested for 257 files
-	  { 
-              /* Connection Status operation code 0xC5 is received */
-              if (l_CheckData >= 3) //l_CheckAUDIOData = 1
-              {     
-                  if (l_RxBuffer[2] != 0x00) // file number low digits
-                  {
-                      // Umrechnung hex into dez
-                       a = ((l_RxBuffer[1] >> 4) & 0x0F) * 4096;// 16x16x16
-                       b =  (l_RxBuffer[1] & 0x0F) * 256;       // 16x16
-                       c = ((l_RxBuffer[2] >> 4) & 0x0F) * 16;  // 16
-                       d =  (l_RxBuffer[2] & 0x0F) * 1;         // 1
-                       
-                       RecordFileNumber = (a+b+c+d)-5;
-                       
-                       Log ("Audio: Total file numbers %d (Includes 5 playback files)", a+b+c+d);
-                       Log ("Audio: Next Record file is [R%03d.wav]", RecordFileNumber + 1);
-                       Log ("Audio: Waiting up to 50s for capacity left (microSD Card 32GB)");
-                      
-                       l_CheckData = 0;
-                       l_flgComCompleted = true;
-                       AudioSendCmdSeq(l_State+1);
-                   }
-                   else
-                   {
-                      LogError("Audio: No file numbers");
-                      SetError(ERR_SRC_AUDIO);	// indicate error via LED
-                      l_flgComCompleted = true;
-                   }
-              }
-              l_CheckData++;
-          }
-          break;
-           
-        case AUDIO_GET_SPACE_LEFT:   // 4.4.9 Space left in the storage device (answer)
+          
+       case AUDIO_GET_SPACE_LEFT:   // 4.4.9 Space left in the storage device (answer)
           if (strncmp(l_RxBuffer, "Î", 1) == 0)     
           {
               /* Connection Status operation code 0xCE is received */
@@ -1141,9 +1107,42 @@ static void CheckAudioData(void)
                  }
               }
               l_CheckData++;
+           }
+           break;   
+ 
+        case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers in root directory 0xC5 (answer)
+          if (strncmp(l_RxBuffer, "Å", 1) == 0) // tested for 160 files
+	  { 
+              /* Connection Status operation code 0xC5 is received */
+              if (l_CheckData >= 3) //l_CheckAUDIOData = 1
+              {     
+                  if (l_RxBuffer[2] != 0x00) // file number low digits
+                  {
+                      // Umrechnung hex into dez
+                       a = ((l_RxBuffer[1] >> 4) & 0x0F) * 4096;// 16x16x16
+                       b =  (l_RxBuffer[1] & 0x0F) * 256;       // 16x16
+                       c = ((l_RxBuffer[2] >> 4) & 0x0F) * 16;  // 16
+                       d =  (l_RxBuffer[2] & 0x0F) * 1;         // 1
+                       
+                       RecordFileNumber = (a+b+c+d)-5;
+                       
+                       Log ("Audio: Total file numbers %d (Includes 5 playback files)", a+b+c+d);
+                       Log ("Audio: Next Record file is [R%03d.wav]", RecordFileNumber + 1);
+                       l_CheckData = 0;
+                       l_flgComCompleted = true;
+                       AudioSendCmdSeq(l_State+1);
+                   }
+                   else
+                   {
+                      LogError("Audio: No file numbers");
+                      SetError(ERR_SRC_AUDIO);	// indicate error via LED
+                      l_flgComCompleted = true;
+                   }
+              }
+              l_CheckData++;
           }
-          break; 
-  
+          break;
+ 
        case AUDIO_STATE_SEND_VC:    // 4.3.9. Volume control (answer)
           if (strncmp(l_RxBuffer, "", 1) == 0)     
           { 
