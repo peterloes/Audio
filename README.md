@@ -7,7 +7,9 @@ Supported:
 - FN-RM01 MP3/WAV Audio Recorder and Player Module (Website: www.flyrontech.com)
 
 
-The Project is used to playback and record sounds of animals.
+The Project is used to playback and record sounds.
+Targeted manipulation via pit-tag numbers.
+
 Uses the Audio Module FN-RM01 which handles automatic playback and record files.
 
 An efficient application to monitor and control animal behaviour in wildlife
