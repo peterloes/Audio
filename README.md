@@ -6,12 +6,9 @@ Platform for Animal Observation and Manipulation
 Supported:
 - FN-RM01 MP3/WAV Audio Recorder and Player Module (Website: www.flyrontech.com)
 
-
 The Project is used to playback and record sounds.
 Targeted manipulation via pit-tag numbers.
-
 ID = D2ECE7D001AF0001:20:20   # runs playback for 20sec,runs record for 20sec
-
 Uses the Audio Module FN-RM01 which handles automatic playback and record files.
 
 
