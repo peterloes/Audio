@@ -1,8 +1,8 @@
 /***************************************************************************//**
  * @file
  * @brief	Configuration Data
- * @author	Ralf Gerhauser
- * @version	2018-11-13
+ * @author	Ralf Gerhauser/Peter Loes
+ * @version	2018-03-25
  *
  * This module reads and parses a configuration file from the SD-Card, and
  * stores the data into a database.  It also provides routines to get access
@@ -12,6 +12,7 @@
 Revision History:
 2019-06-01,rage	- Bugfix in getString: Corrected pointer increment and check
 		  for comment or end of line.
+2018-03-25,rage	- Added the ability of parsing ENUM definitions.
 2018-11-13,rage	- The list of Transponder IDs is no more kept in memory, instead
 		  the configuration file is read for each compare.  This allows
 		  a higher number of IDs to be used (no memory limitations).
@@ -315,7 +316,7 @@ CFG_VAR_TYPE cfgVarType;
 const char **ppEnumName;
 
 
-    line--;
+    line--;  	// one less character for length calculation
 
     if (skipSpace(&pStr))	// skip white space
 	return NULL;
@@ -371,20 +372,22 @@ const char **ppEnumName;
     if (*pStr != '=')
     {
 	LogError ("Config File - Line %d, pos %ld: Missing '=' after %s",
-		  lineNum, (pStr-line), pStrBegin);
-	return NULL;
+		 // lineNum, (pStr-line), pStrBegin);
+                 lineNum, (pStr-line), l_pCfgVarList[varIdx].name);
+        return NULL;
     }
     pStr++;
 
     if (skipSpace(&pStr))	// skip white space
     {
-	LogError ("Config File - Line %d, pos %ld: Value expected after %s",
-		  lineNum, (pStr-line), pStrBegin);
-	return NULL;
+	LogError ("Config File - Line %d, pos %ld: Value expected for %s",
+                  lineNum, (pStr-line), l_pCfgVarList[varIdx].name);
+		  //lineNum, (pStr-line), pStrBegin);
+        return NULL;
     }
 
-    /* value depends on the type of variable */
-    switch (cfgVarType)
+   /* value depends on the type of variable */
+      switch (cfgVarType)
     {
 	case CFG_VAR_TYPE_TIME:	// 00:00 to 23:59
 	    if (! isdigit((int)*pStr))
@@ -520,8 +523,8 @@ const char **ppEnumName;
 		pNewID = malloc(sizeof(ID_Parm) + strlen(pStrBegin) + 1);
 		if (pNewID == NULL)
 		{
-		    LogError ("Config File - Line %d, pos %ld, ID: OUT OF MEMORY",
-			      lineNum, (pStr-line));
+		   LogError ("Config File - Line %d, pos %ld, %s ID: OUT OF MEMORY",
+			  lineNum, (pStr-line), l_pCfgVarList[varIdx].name);
 		    return NULL;
 		}
 
@@ -594,7 +597,7 @@ const char **ppEnumName;
 	default:		// unsupported data type
 	    LogError ("Config File - Line %d, pos %ld, %s: "
 		      "Unsupported data type %d", lineNum, (pStr-line),
-		      pStrBegin, cfgVarType);
+		      l_pCfgVarList[varIdx].name, l_pCfgVarList[varIdx].type);
 	    return NULL;
     }
 
