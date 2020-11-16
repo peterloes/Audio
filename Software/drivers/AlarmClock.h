@@ -34,7 +34,7 @@ Revision History:
 
 #ifndef MAX_SEC_TIMERS
     /*!@brief Maximum number of sTimer entries */
-    #define MAX_SEC_TIMERS	10
+    #define MAX_SEC_TIMERS	16
 #endif
 
 #ifndef MAX_ALARMS
