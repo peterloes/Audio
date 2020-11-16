@@ -1,6 +1,5 @@
 # Configuration file for MOMO_AUDIO_PLAY_RECORD (AUDIO_PR)
-
-# Revision History
+# Revision History
 # 2020-07-27,rage   Expansion Soundmodul
 # 2017-01-22,rage   Initial version
 
@@ -11,13 +10,13 @@
 # RFID_TYPE [SR, LR]
 #   RFID reader device type: SR is Short Range reader, LR is Long Range reader.
 #   If no type is specified (i.e. the variable is #-commented), the associated
-#   logic will not be activated. Default SR frontplate RFID reader 
+#   logic will not be activated. Default SR frontplate RFID reader. 
  
  
-# RFID_POWER [UA1]
-#   RFID reader power source, must be set to UA1 or UA2.
+# RFID_POWER [UA]
+#   RFID reader power source, must be set to UA.
 #   If no value is specified (i.e. the variable is #-commented), the associated
-#   logic will not be activated. UA1 set to frontplate PWR_OUT_RFID_GND_LB
+#   logic will not be activated. UA set to frontplate PWR_OUT_RFID_GND_LB
 
 # RFID_DETECT_TIMEOUT [s]
 #   Duration in seconds measured from the trigger, i.e. when the light barrier
@@ -62,7 +61,7 @@
 #          Parameter 30: default volume
 #          There are total of 31 volume levels,
 #          Level 1 is mute while level 31 is the maximum volume.
-#   4.3.13 Choose a storage device(ÂµSD Card or USB flash drive)
+#   4.3.13 Choose a storage device(µSD Card or USB flash drive)
 #          to work with the module
 #          ST - Storage Device:
 #          Parameter 0:shift to SD card(by default)
@@ -118,7 +117,7 @@
 
     # RFID configuration
 RFID_TYPE           = SR    # Short Range reader
-RFID_POWER          = UA1   # Set to frontplate PWR_OUT_RFID_GND_LB
+RFID_POWER          = UA   # Set to frontplate PWR_OUT_RFID_GND_LB
 RFID_DETECT_TIMEOUT = 20   # [sec]
 
 
@@ -141,23 +140,39 @@ AUDIO_CFG_RQ   =   0   # Recording Quality [x] default 0, see 4.3.15.
 
 
     # AUDIO PLAYBACK setting durations (default)
-PLAYBACK  = 20      # [sec]
+PLAYBACK  = 10      # [sec]
 
 
     # AUDIO RECORD setting durations (default)
-RECORD      = 10    # [sec]
+RECORD      = 30    # [sec]
 
 
     # AUDIO PLAYBACK TYPE setting durations (default)
-PLAYBACK_TYPE = 1   # not random P001
+PLAYBACK_TYPE = 3   # not random P003
 
 
     # ID-specific configurations
-ID = UNKNOWN:10:0:1
-ID = ANY:0:10:1
-#ID = D2ECE7D001AF0001:20:20   # runs playback for 20sec,runs record for 20sec
-#ID = 33C213A801AF0001:20:0:3 	# no random playback runs P003 for 20sec.
-#ID = 4B76C4B43A6F0001:20:0:2	 # no random playback runs P002 for 20sec.
-#ID = 39D0000000008001:20:0:6	 # random playback runs P001, P002 for 20sec.
-#ID = A159D99B16900001:20:0:9	 # random playback runs P001, P002, P003, P004 and P005 for 20sec.
-#ID = 39D0000000008001:0:20	   # runs record for 20sec
+ID = D2ECE7D001AF0001:20:20    # runs playback for 20sec,runs record for 20sec
+ID = 33C213A801AF0001:20:0:3 	# no random playback runs P001 for 20sec.
+ID = 4B76C4B43A6F0001:20:0:2	# no random playback runs P005 for 20sec.
+ID = 39D0000000008001:0:20:6	# random playback runs P001, P002 for 20sec.
+ID = A159D99B16900001:20:0:9	# random playback runs P001, P002, P003, P004 and P005 for 20sec.
+#ID = 33C213A801AF0001:20:0:5    # runs playback for 20sec, playback_type is 5
+#ID = 39D0000000008001:0:20	# runs record for 20sec 
+#ID = UNKNOWN
+#ID = ANY
+#ID = ANY:10:0:3
+#ID = UNKNOWN:10:0:1
+#ID = UNKNOWN:0:10:1
+#ID = UNKNOWN:10:10:1
+#ID = UNKNOWN:0:0
+#ID = ANY:10:0:3
+#ID = ANY:10:10:1
+#ID = D2ECE7D001AF0001:20:20:6   
+#ID = 33C213A801AF0001:0:20    
+#ID = 4B76C4B43A6F0001:10:10:8
+#ID = D2ECE7D001AF0001:20:20:1	# runs playback for 20sec, playback_type is 1
+#ID = D2ECE7D001AF0001:20:0:2    # runs playback for 20sec, playback_type is 2
+#ID = 33C213A801AF0001:20:0:3    # runs playback for 20sec, playback_type is 3
+#ID = 4B76C4B43A6F0001:20:0:4    # runs playback for 20sec, playback_type is 4
+ 
