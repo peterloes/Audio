@@ -12,7 +12,7 @@
  *
  ****************************************************************************//*
 Revision History:
-2020-01-03,rage	-  Start and Stop Playback & Record
+2020-01-03,rage	- Start and Stop Playback & Record
 2017-05-02,rage	- ControlInit: Added CONTROL_INIT structure to specify the
 		  power output.
 		- PWR_OUT_DEF contains the bit address and logical enable level
@@ -67,9 +67,7 @@ typedef struct
 /*================================ Global Data ===============================*/
 
     /*!@brief CFG_VAR_TYPE_ENUM_2: Enum names for Power Outputs. */
-const char *g_enum_PowerOutput[] = { "RFID_GND_LB", "UA2", ",SERVO", "LINEAR",
-				     "RFID1", "RFID2", "RFID3", "UA1",
-				      NULL };
+const char *g_enum_PowerOutput[] = { "UA2", "UA", NULL };
           
 /*================================ Local Data ================================*/
 
@@ -78,14 +76,8 @@ const char *g_enum_PowerOutput[] = { "RFID_GND_LB", "UA2", ",SERVO", "LINEAR",
      */
 static const PWR_OUT_DEF  l_PwrOutDef[NUM_PWR_OUT] =
 {   //   BitBandAddr,              HighActive
-    { GPIO_BIT_ADDR(gpioPortA,  3), true },	// PWR_OUT_RFID_GND_LB
     { GPIO_BIT_ADDR(gpioPortA,  4), true },	// PWR_OUT_UA2
-    { GPIO_BIT_ADDR(gpioPortE,  8), true },	// PWR_OUT_VDD_SERVO
-    { GPIO_BIT_ADDR(gpioPortC, 15), true },	// PWR_OUT_VDD_LINEAR
-    { GPIO_BIT_ADDR(gpioPortC,  8), true },	// PWR_OUT_VDD_RFID1
-    { GPIO_BIT_ADDR(gpioPortC,  9), true },	// PWR_OUT_VDD_RFID2
-    { GPIO_BIT_ADDR(gpioPortC, 10), true },	// PWR_OUT_VDD_RFID3
-    { GPIO_BIT_ADDR(gpioPortA,  6), true },	// PWR_OUT_UA1
+    { GPIO_BIT_ADDR(gpioPortA,  6), true },	// PWR_OUT_UA
 };
 
     /*!@brief Default value of the playback_type, set by PLAYBACK_TYPE. */
@@ -114,15 +106,7 @@ static int32_t		l_KeepRecord = DFLT_KEEP_RECORD_DURATION;
 static const CFG_VAR_DEF l_CfgVarList[] =
 {
  { "ON_TIME_1",		       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "ON_TIME_2",		       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "ON_TIME_3",		       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "ON_TIME_4",		       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "ON_TIME_5",		       CFG_VAR_TYPE_TIME,	NULL		},
  { "OFF_TIME_1",	       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "OFF_TIME_2",	       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "OFF_TIME_3",	       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "OFF_TIME_4",	       CFG_VAR_TYPE_TIME,	NULL		},
- //{ "OFF_TIME_5",	       CFG_VAR_TYPE_TIME,	NULL		},
  { "LB_FILTER_DURATION",       CFG_VAR_TYPE_INTEGER,    &g_LB_FilterDuration  },
  { "RFID_TYPE",		       CFG_VAR_TYPE_ENUM_1,	&g_RFID_Type	},
  { "RFID_POWER",	       CFG_VAR_TYPE_ENUM_2,	&g_RFID_Power	},
