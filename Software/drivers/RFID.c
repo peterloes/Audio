@@ -127,7 +127,6 @@ RFID_TYPE g_RFID_Type;
     /*!@brief RFID power output. */
 PWR_OUT   g_RFID_Power = PWR_OUT_NONE;
 
-    /*!@brief Duration in [s] during the RFID reader tries to read an ID. */
 int32_t  g_RFID_DetectTimeout = DFLT_RFID_DETECT_TIMEOUT;
 
 
@@ -441,8 +440,16 @@ void	RFID_Check (void)
 	/* RFID reader should be powered OFF */
 	if (l_flgRFID_IsOn)
 	{
-	    RFID_PowerOff();
-	    l_flgRFID_IsOn = false;
+	    
+            /*
+	     * The RFID reader is powered off only if no transponder
+             * is present, i.e. <g_Transponder> is empty.
+	     */
+            if (g_Transponder[0] == EOS)
+	    {
+               RFID_PowerOff();
+	       l_flgRFID_IsOn = false;
+            }
 	}
     }
 
