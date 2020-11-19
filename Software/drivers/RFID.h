@@ -74,12 +74,8 @@ void	RFID_Enable (void);
     /* Enable RFID Power reader */
 void RFIDPower_Enable(void);
 
-
     /* Disable RFID reader */
 void	RFID_Disable (void);
-
-    /* Check if RFID reader is enabled */
-bool	IsRFID_Enabled (void);
 
     /* Check if to power-on/off RFID reader, get tranponder number */
 void	RFID_Check (void);

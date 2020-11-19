@@ -624,6 +624,7 @@ void AudioPowerOff (void)
     Log ("Audio is powered off");
 #endif
     
+    l_flgLocked = false;
     l_flgAudioInitIsDone = false;
 }
   
@@ -1248,6 +1249,7 @@ static void CheckAudioData(void)
          l_CheckData = 1;
          l_flgComCompleted = true;
          l_State = AUDIO_STATE_OPERATIONAL;
+         l_flgLocked = false;
          l_flgAudioInitIsDone = true;
          break;
      

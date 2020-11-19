@@ -233,6 +233,7 @@ int	i;
     /* Disable RFID functionality */
     g_RFID_Type = RFID_TYPE_NONE;
     g_RFID_Power = PWR_OUT_NONE;
+    l_flgTwiceIDLocked = false;
     
     /* Disable Audio functionality */
     g_AudioPower = PWR_OUT_NONE;
@@ -240,6 +241,7 @@ int	i;
     g_AudioCfg_ST = 0;
     g_AudioCfg_IM = 0;
     g_AudioCfg_RQ = 0;
+    
 }
 
 
@@ -351,13 +353,16 @@ isAudioLocked  = IsAudioLocked();
            /*
 	    * A KEEP_PlAYBACK value of 1..n or "A" ANY means there was a transponder detected
 	    */
-       
-            if(!isAudioLocked)
-            {
-               /* start playing */
-	       PlaybackRun();
-               sTimerStart (l_hdlPlayRec, l_KeepPlayback);
-             }
+               /* be sure to cancel PlayRec timer */
+ 	   if (l_hdlPlayRec != NONE)
+           { 	
+	      if(!isAudioLocked)
+              {
+                 /* start playing */
+	         PlaybackRun();
+                 sTimerStart (l_hdlPlayRec, l_KeepPlayback);
+              }
+           }
         }
         else
         {
@@ -436,7 +441,7 @@ isAudioLocked  = IsAudioLocked();
           * via IsControlRecStop */
          l_flgAudioRecStop = true;
          l_flgAudioRecRun = false;
-          l_flgTwiceIDLocked = false;
+         l_flgTwiceIDLocked = false;
     }
 }
 

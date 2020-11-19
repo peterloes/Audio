@@ -129,7 +129,6 @@ PWR_OUT   g_RFID_Power = PWR_OUT_NONE;
 
 int32_t  g_RFID_DetectTimeout = DFLT_RFID_DETECT_TIMEOUT;
 
-
     /*!@brief Framing and Parity error counters of the USARTs. */
 uint16_t g_FERR_Cnt;
 uint16_t g_PERR_Cnt;
@@ -323,29 +322,22 @@ void RFID_Disable (void)
     if (l_flgRFID_On)
     {
 	l_flgRFID_On = false;   // mark RFID reader to be powered off
-
-	/* RFID reader should be powered OFF */
-	if (l_flgRFID_IsOn)
+        
+      	/*
+	 * The RFID reader is powered off only if no transponder 
+         * is present, i.e. <g_Transponder> is empty.
+	 */
+        if (g_Transponder[0] == EOS)
 	{
-	    RFID_PowerOff();
-	    l_flgRFID_IsOn = false;
-	}
+
+	   /* RFID reader should be powered OFF immediately*/
+	   if (l_flgRFID_IsOn)
+	   {
+	       RFID_PowerOff();
+	       l_flgRFID_IsOn = false;
+	   }
+        }
     }
-}
-
-
-/***************************************************************************//**
- *
- * @brief	Check if RFID reader is enabled
- *
- * This routine returns the current power state of the RFID reader.
- *
- * @see RFID_Enable(), RFID_Disable(), RFID_Check()
- *
- ******************************************************************************/
-bool	IsRFID_Enabled (void)
-{
-    return l_flgRFID_On;
 }
 
 
@@ -512,7 +504,7 @@ static void RFID_DetectTimeout(TIM_HDL hdl)
     
     strcpy (g_Transponder, "UNKNOWN");
 
-#if defined(LOGGING)  &  ! defined (MOD_CONTROL_EXISTS)
+#if defined(LOGGING)  &&  ! defined (MOD_CONTROL_EXISTS)
 	/* Generate Log Message if there is no external module to handle this */
 	Log ("Transponder: %s", g_Transponder);
 #endif
