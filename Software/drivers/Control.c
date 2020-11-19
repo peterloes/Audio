@@ -620,10 +620,6 @@ int	i;
  *****************************************************************************/
 void	PowerOutput (PWR_OUT output, bool enable)
 {
-  
-    /* No power enable if Power Fail is active */
-    if (enable  &&  IsPowerFail())
-       return;
     
     /* Parameter check */
     if (output == PWR_OUT_NONE)
