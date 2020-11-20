@@ -323,8 +323,8 @@ int8_t	on_hour, on_min, off_hour, off_min;
     /* Check all power-related alarms */
     for (i = 0;  i < NUM_POWER_ALARMS;  i++)
     {
-	alarm_on  = (int)ALARM_ON_TIME  + i;
-	alarm_off = (int)ALARM_OFF_TIME + i;
+	alarm_on  = (int)ALARM_ON_TIME_1  + i;
+	alarm_off = (int)ALARM_OFF_TIME_1 + i;
 
 	if (AlarmIsEnabled(alarm_on) == false)
 	    continue;		// skip alarms which are disabled
