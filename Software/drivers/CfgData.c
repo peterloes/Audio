@@ -423,8 +423,8 @@ const char **ppEnumName;
 	    }
 
             /* set alarm time and enable it */
-	    AlarmSet (FIRST_POWER_ALARM + varIdx, hour, minute);
-	    AlarmEnable (FIRST_POWER_ALARM + varIdx);
+	    AlarmSet (ALARM_ON_TIME + varIdx, hour, minute);
+	    AlarmEnable (ALARM_ON_TIME + varIdx);
 	    break;
 
 

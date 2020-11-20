@@ -11,7 +11,6 @@
 Revision History:
 2018-03-16,rage	Disable interrupts for a minimum of time to prevent data loss
 		in conjunction with other interrupt handlers.
-		Added LogFlushTrigger() to force a flush from other modules.
 2016-09-27,rage	LogFlushCheck: Flush log buffer if threshold has been reached,
 		even if LOG_FLUSH_PAUSE is not over.
 		Print logging timestamp with milliseconds resolution.
@@ -84,20 +83,14 @@ static volatile bool l_flgLogFlushTrigger;
     /* Flag to inhibit flushing the log buffer, see LOG_FLUSH_PAUSE. */
 static volatile bool l_flgLogFlushInhibit;
 
+    /* Counter to specify how often the Log Flush LED will flash */
+static volatile uint8_t l_LogFlushLED_FlashCnt;
+
     /* File handle for log file */
 static FIL	l_fh;
 
     /* Timer handle for the log buffer flushing control */
 static TIM_HDL	l_thLogFlushCtrl = NONE;
-
-#if KEY_AUTOREPEAT	// ms-Timer is already in use
-    /* Timer handle for switching off the Flush LED after some time */
-static TIM_HDL	l_thLogFlushLED = NONE;
-#else
-    /* Counter to specify how often the Log Flush LED will flash */
-static volatile uint8_t l_LogFlushLED_FlashCnt;
-
-#endif
 
 #if LOG_ALIVE_INTERVAL > 0
     /* Timer handle for the alive interval */
@@ -132,11 +125,6 @@ void	 LogInit (void)
     /* Get a timer handle for the log sample timeout */
     if (l_thLogFlushCtrl == NONE)
 	l_thLogFlushCtrl = sTimerCreate (logFlushCtrl);
-
-#if KEY_AUTOREPEAT	// ms-Timer is already in use
-    if (l_thLogFlushLED == NONE)
-	l_thLogFlushLED = sTimerCreate ((TIMER_FCT)logFlushLED);
-#endif
 
 #if LOG_ALIVE_INTERVAL > 0
     /* Get a timer handle for the log alive interval */
@@ -358,18 +346,11 @@ UINT	 bytesWr;
 
     if (! IsPowerFail())
     {
-#if KEY_AUTOREPEAT	// ms-Timer is already in use
-	/* Signal that Log Flushing is done by illuminating the LED */
-	LOG_FLUSH_LED = 1;			// switch LED on
-	if (l_thLogFlushLED != NONE)
-	    sTimerStart (l_thLogFlushLED, LOG_FLASH_LED_DURATION);
-#else
 	/* Signal that Log Flushing is done by flashing the LED */
 	l_LogFlushLED_FlashCnt = LOG_FLASH_LED_CNT;
 	LOG_FLUSH_LED = 1;			// switch LED on
 	msTimerAction (logFlushLED);
 	msTimerStart (LOG_FLASH_LED_DELAY);	// flashing delay/frequency
-#endif
     }
 
     /* Start timer to handle log flushing pause */
@@ -379,20 +360,6 @@ UINT	 bytesWr;
     /* Inhibit flushing the log buffer for that time */
     l_flgLogFlushInhibit = true;
     l_flgLogFlushTrigger = false;
-}
-
-/***************************************************************************//**
- *
- * @brief	Trigger a Log Flush
- *
- * This routine allows an external module to trigger a flush of the log buffer.
- * It is used by MenuKeyHandler() to force a LogFlush() by asserting the
- * <i>Set-Key</i> before removing the SD-Card.
- *
- ******************************************************************************/
-void	 LogFlushTrigger (void)
-{
-    l_flgLogFlushTrigger = true;
 }
 
 

@@ -507,7 +507,8 @@ void	AudioCheck (void)
         {
         /* Generate Log Message */
           Log ("Audio: Playback and Record are locked");
-        l_flgSingleAction = true;
+          l_flgSingleAction = true;
+          l_flgLocked = false;
         }
       }
    }
@@ -536,6 +537,7 @@ void	AudioCheck (void)
             /* Generate Log Message */
             Log ("Audio: Playback and Record are locked");
             l_flgSingleAction = true;
+            l_flgLocked = false;
          }
       }
    } 
@@ -1026,7 +1028,7 @@ static void CheckAudioData(void)
           else
           {
              /* Connection status 0xCA is not received */
-             LogError("Audio: Connection MicroSD card or USB flash Status");
+             LogError("Audio: Connection MicroSD card or USB flash execution failed");
              SetError(ERR_SRC_AUDIO);	// indicate error via LED
              l_flgComCompleted = true;
           }
@@ -1073,7 +1075,7 @@ static void CheckAudioData(void)
           else
           {
               /* Work Status replay 0xC2 is not received */
-              LogError("Audio: No Work Status");
+              LogError("Audio: Work Status execution failed");
               SetError(ERR_SRC_AUDIO);	// indicate error via LED
               l_flgComCompleted = true;
           }
@@ -1104,11 +1106,19 @@ static void CheckAudioData(void)
                  {
                      LogError("Audio: No Space left");
                      SetError(ERR_SRC_AUDIO);	// indicate error via LED
+                     l_CheckData = 0;
                      l_flgComCompleted = true;
                  }
               }
               l_CheckData++;
            }
+           else
+           {
+              /* "Î" command execution failed */
+              LogError("Audio: Get Space Volume execution failed");
+              SetError(ERR_SRC_AUDIO);	// indicate error via LED
+              l_CheckData = 0;
+           } 
            break;   
  
         case AUDIO_GET_FILE_NUMBERS:  // 4.4.3 Total file numbers in root directory 0xC5 (answer)
@@ -1137,10 +1147,17 @@ static void CheckAudioData(void)
                    {
                       LogError("Audio: No file numbers");
                       SetError(ERR_SRC_AUDIO);	// indicate error via LED
+                      l_CheckData = 0;
                       l_flgComCompleted = true;
                    }
               }
               l_CheckData++;
+          }
+          else
+          {
+             LogError("Audio: No file numbers execution failed");
+             SetError(ERR_SRC_AUDIO);	// indicate error via LED
+             l_CheckData = 0;
           }
           break;
  
@@ -1258,7 +1275,7 @@ static void CheckAudioData(void)
           if (strncmp(l_RxBuffer, "", 1) == 0) 
           {
                /* 0x01 command execution failed */
-               LogError("Audio: Playback ON failed - Control Playback Type - Wait for Playback off");
+               LogError("Audio: Playback ON execution failed - Control Playback Type - Wait for Playback off");
           }
 	  else
 	  {
@@ -1303,7 +1320,7 @@ static void CheckAudioData(void)
           if (strncmp(l_RxBuffer, "", 1) == 0)
           {
               /* 0x02 command execution failed */
-              LogError("Audio: Record ON failed");
+              LogError("Audio: Record ON execution failed");
           }
           digit_1 = 0;
           digit_2 = 0;
@@ -1316,7 +1333,7 @@ static void CheckAudioData(void)
 	   if (strncmp(l_RxBuffer, "", 1) == 0) 
            {
 	        /* 0x01 command execution failed */
-                LogError("Audio: Playback off failed");
+                LogError("Audio: Playback off execution failed");
 	    }    
             else
 	    {
@@ -1331,7 +1348,7 @@ static void CheckAudioData(void)
 	case AUDIO_SEND_RECORD_STOP: // 4.3.20 Stop recording (answer)
            if (strncmp(l_RxBuffer, "", 1) == 0) 
            {
-                LogError("Audio: Record off failed");
+                LogError("Audio: Record off execution failed");
            }
 	   else
 	   {

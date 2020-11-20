@@ -223,7 +223,7 @@ int	i;
     {
 	if (AlarmIsEnabled(i))
 	{
-	    if (i >= ALARM_OFF_TIME_1)
+	    if (i >= ALARM_OFF_TIME)
 		ExecuteAlarmAction(i);	// OFF-Time: Switch device off
 
 	    AlarmDisable(i);		// Disable this alarm
@@ -692,7 +692,7 @@ int	 pwrState;
 		&& alarmNum <= LAST_POWER_ALARM);
 
     /* Determine switching state */
-    pwrState = (alarmNum >= ALARM_OFF_TIME_1 ? PWR_OFF:PWR_ON);
+    pwrState = (alarmNum >= ALARM_OFF_TIME ? PWR_OFF:PWR_ON);
 
     /* RFID reader and Audio module are always switched on or off together */
     if (pwrState == PWR_ON)

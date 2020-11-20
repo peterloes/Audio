@@ -5,6 +5,7 @@
  * @version	2018-03-16
  ****************************************************************************//*
 Revision History:
+2019-02-10,rage	Increased LOG_SAMPLE_MAX_SIZE from 100 to 120 characters.
 2018-03-16,rage Added prototype for LogFlushTrigger().
 2015-04-02,rage	Initial version.
 */
@@ -57,7 +58,7 @@ Revision History:
      * of the buffer is less than this value.
      */
 #ifndef LOG_ENTRY_MAX_SIZE
-    #define LOG_ENTRY_MAX_SIZE	100
+    #define LOG_ENTRY_MAX_SIZE	120
 #endif
 
     /*!@brief Use this define to specify a function to be called for monitoring
@@ -81,7 +82,6 @@ void	 LogFileOpen (char *filepattern, char *filename); // Open Log File
 void	 Log (const char *frmt, ...);		// Log a message
 void	 LogError (const char *frmt, ...);	// Log an error
 void	 LogFlush (bool flgKeepPowerOn);	// Flush the log buffer
-void	 LogFlushTrigger (void);	// Trigger a Log Flush
 void	 LogFlushCheck (void);		// Check if to flush the log buffer
 
 
