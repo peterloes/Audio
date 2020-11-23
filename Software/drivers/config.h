@@ -59,7 +59,7 @@ Revision History:
  * Set to 0 to use the internal RC oscillator, if 1 the external 32MHz XTAL
  * is used.  The frequency of the RC oscillator is 14MHz per default.
  */
-#define USE_EXT_32MHZ_CLOCK	1
+#define USE_EXT_32MHZ_CLOCK	0
 
 /*
  * Configuration for module "AlarmClock"

@@ -205,6 +205,8 @@ static void uartSetup(void);
  ******************************************************************************/
 void	RFID_Init (void)
 {
+    /* Parameter check */
+    EFM_ASSERT(pInitStruct != NULL);
     
     /* Check if RFID reader is already in use */
     if (l_flgRFID_Activate)
@@ -450,13 +452,11 @@ void	RFID_Check (void)
  
        l_flgNewID = false;
      
-            if (l_hdlRFID_DetectTimeout != NONE)
-	sTimerCancel (l_hdlRFID_DetectTimeout);
+       if (l_hdlRFID_DetectTimeout != NONE)
+	  sTimerCancel (l_hdlRFID_DetectTimeout);
         
         /* New transponder ID has been set - inform control module */
-	//Log ("ControlUpdateID(%s) - START", g_Transponder);
 	ControlUpdateID(g_Transponder);
-	//Log ("ControlUpdateID(%s) - END", g_Transponder);
     }
 }
 
