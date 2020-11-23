@@ -157,8 +157,8 @@ Revision History:
  * configuration file for a description of all possible variables defined in
  * @ref l_CfgVarList.
  * - Removing an SD-Card
- *   -# Generate a log message by triggering the light barriers, optionally
- *      with a reference transponder.
+ * -# Generate a log message by some action, e.g. with a transponder,
+ *      to force a LogFlush().
  *   -# Wait about 5 seconds (@ref LOG_SAMPLE_TIMEOUT) until the green LED
  *      starts flashing.  Log data is now written to the SD-Card.
  *   -# When the green LED stops flashing, you have a guaranteed duration
@@ -496,8 +496,8 @@ volatile uint16_t	l_ErrorFlags;
 static const EXTI_INIT  l_ExtIntCfg[] =
 {   //	IntBitMask,	IntFct
     {	DCF_EXTI_MASK,	DCF77Handler		},	// DCF77
-    {	LB_EXTI_MASK,	LB_Handler		},	// Light Barriers
     {	PF_EXTI_MASK,	PowerFailHandler	},	// Power Fail
+    {	LB_EXTI_MASK,	LB_Handler		},	// Light Barriers
     {	0,		NULL			}
 };
 
@@ -629,11 +629,11 @@ int main( void )
 #endif
             /* Check if to power-on or off the RFID reader */
 	    RFID_Check();
-            
+                                    
             /* Check if to power-on or off Audio module */
-            AudioCheck();
+           // AudioCheck();
             
-      	    /* Check if SD-Card has been inserted or removed */
+       	    /* Check if SD-Card has been inserted or removed */
 	    if (DiskCheck())
 	    {
 		/* First check if an "*.UPD" file exists on this SD-Card */
@@ -660,25 +660,28 @@ int main( void )
                 
                 /* Clear (previous) Configuration - switch devices off */
 		ClearConfiguration();
-                
-	        /* Read and parse configuration file */
+                 
+                /* Read and parse configuration file */
 		CfgRead(CONFIG_FILE_NAME);
 
-		/* Initialize RFID reader according to (new) configuration */
+                /* Initialize RFID reader according to (new) configuration */
 		RFID_Init();
-                
+               
                 /* Initialize Audio module according to (new) configuration */
 		AudioInit();
                 
                 /* Flush log buffer again and switch SD-Card power off */
-		LogFlush(false);
-                    
+	       LogFlush(false);
+                                   
                /* See if devices must be switched on at this time */
                CheckAlarmTimes();
-           }
+            }
             
 	    /* Check Battery State */
 	    BatteryCheck();
+            
+             /* Check if to power-on or off Audio module */
+            AudioCheck();
                       
             /* Check if to flush the log buffer */
 	    LogFlushCheck();
