@@ -1,11 +1,10 @@
 # Configuration file for MOMO_AUDIO_PLAY_RECORD (AUDIO_PR)
-# Revision History
+
+# Revision History
 # 2020-07-27,rage   Expansion Soundmodul
 # 2017-01-22,rage   Initial version
 
 # Configuration Variables in config.txt:
-
-# RFID_TYPE [SR, LR]
 
 # RFID_TYPE [SR, LR]
 #   RFID reader device type: SR is Short Range reader, LR is Long Range reader.
@@ -61,7 +60,7 @@
 #          Parameter 30: default volume
 #          There are total of 31 volume levels,
 #          Level 1 is mute while level 31 is the maximum volume.
-#   4.3.13 Choose a storage device(µSD Card or USB flash drive)
+#   4.3.13 Choose a storage device(ÂµSD Card or USB flash drive)
 #          to work with the module
 #          ST - Storage Device:
 #          Parameter 0:shift to SD card(by default)
@@ -84,8 +83,6 @@
 
 # AUDIO RECORD setting [s]
 #   Default duration in seconds.
-
-
 
 # AUDIO PLAYBACK_TYPE  [1,2,3,4,5; 6,7,8,9]
 #   Playback files not random: P001.x, P002.x, P003.x, P004.x and P005.x. [1,2,3,4,5]
@@ -152,27 +149,10 @@ PLAYBACK_TYPE = 3   # not random P003
 
 
     # ID-specific configurations
-ID = D2ECE7D001AF0001:20:20    # runs playback for 20sec,runs record for 20sec
-ID = 33C213A801AF0001:20:0:3 	# no random playback runs P001 for 20sec.
-ID = 4B76C4B43A6F0001:20:0:2	# no random playback runs P005 for 20sec.
-ID = 39D0000000008001:0:20:6	# random playback runs P001, P002 for 20sec.
-ID = A159D99B16900001:20:0:9	# random playback runs P001, P002, P003, P004 and P005 for 20sec.
-#ID = 33C213A801AF0001:20:0:5    # runs playback for 20sec, playback_type is 5
-#ID = 39D0000000008001:0:20	# runs record for 20sec 
-#ID = UNKNOWN
-#ID = ANY
-#ID = ANY:10:0:3
-#ID = UNKNOWN:10:0:1
-#ID = UNKNOWN:0:10:1
-#ID = UNKNOWN:10:10:1
-#ID = UNKNOWN:0:0
-#ID = ANY:10:0:3
-#ID = ANY:10:10:1
-#ID = D2ECE7D001AF0001:20:20:6   
-#ID = 33C213A801AF0001:0:20    
-#ID = 4B76C4B43A6F0001:10:10:8
-#ID = D2ECE7D001AF0001:20:20:1	# runs playback for 20sec, playback_type is 1
-#ID = D2ECE7D001AF0001:20:0:2    # runs playback for 20sec, playback_type is 2
-#ID = 33C213A801AF0001:20:0:3    # runs playback for 20sec, playback_type is 3
-#ID = 4B76C4B43A6F0001:20:0:4    # runs playback for 20sec, playback_type is 4
- 
+ID = D2ECE7D001AF0001:20:20   # runs playback for 20sec,runs record for 20sec.
+ID = 33C213A801AF0001:20:0:1 	# no random playback runs P001 for 20sec.
+ID = 4B76C4B43A6F0001:20:0:5	 # no random playback runs P005 for 20sec.
+ID = 39D0000000008001:0:20:6	 # record for 20sec.
+ID = A159D99B16900001:20:0:9	 # random playback runs P001, P002, P003, P004 and P005 for 20sec.
+#ID = ANY:10:0:3              # runs playback for 10 sec., for each ID number  
+#ID = UNKNOWN:10:0:1          # after light barrier conctact, runs playback 10 sec.
