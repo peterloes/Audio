@@ -1,6 +1,7 @@
 ﻿# Audio
  designed with MOMO 
- Firmware not reviewed.2020 
+ 
+ Firmware not reviewed. 
 
 Platform for Animal Observation and Manipulation
 
