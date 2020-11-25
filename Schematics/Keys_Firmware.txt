@@ -1,0 +1,2 @@
+Keys are not supported via firmware!
+Use only config.txt for Audio module handling!
