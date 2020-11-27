@@ -22,7 +22,6 @@ Revision History:
 #include "PowerFail.h"
 #include "AlarmClock.h"
 #include "RFID.h"
-#include "LEUART.h"
 #include "Logging.h"
 #include "Control.h"
 
@@ -229,5 +228,4 @@ static void InitiatePowerOff(void)
 {
     l_LB_FilterOutput = false;	// clear filter flag
     DBG_PUTS(" DBG InitiatePowerOff: setting l_LB_FilterOutput=0\n");
-    drvLEUART_sync();
 }

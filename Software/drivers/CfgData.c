@@ -155,10 +155,10 @@ UINT	 cnt = 0;	// number of bytes read
 char	 line[200];	// line buffer (resides on stack)
 
 
-  
-    /* Flush Log Buffer and keep SD-Card power on */
-    LogFlush(true);
     
+    /* Be sure to flush current log buffer so it is empty */
+    LogFlush(true);	// keep SD-Card power on!
+  
     /* Log reading of the configuration file */
     if (transponderID == NULL)
     {
@@ -194,9 +194,7 @@ char	 line[200];	// line buffer (resides on stack)
 	    res = f_read(&l_fh, line + i, 1, &cnt);
 	    if (res != FR_OK)
 	    {
-		LogError ("CfgRead: FILE READ - Error Code %d at line %d, pos %d%",
-			  res, lineNum, i, IsFileHandleValid(&l_fh) ? ""
-			  : ", handle not valid");
+		LogError ("CfgRead: FILE READ - Error Code %d", res);
 		l_flgDataLoaded = false;
 		break;
 	    }

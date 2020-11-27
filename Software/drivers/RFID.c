@@ -205,9 +205,7 @@ static void uartSetup(void);
  ******************************************************************************/
 void	RFID_Init (void)
 {
-    /* Parameter check */
-    EFM_ASSERT(pInitStruct != NULL);
-    
+   
     /* Check if RFID reader is already in use */
     if (l_flgRFID_Activate)
 	RFID_PowerOff();	// power-off and reset reader and UART
@@ -403,6 +401,8 @@ void RFID_PowerOff (void)
     /* Generate Log Message */
     Log ("RFID is powered off");
 #endif
+    
+   g_flgIRQ = true;	// keep on running
 }
 
 
@@ -472,6 +472,7 @@ void	RFID_Check (void)
 void	RFID_PowerFailHandler (void)
 {
  
+   /* Cancel timer */ 
    if (l_hdlRFID_DetectTimeout != NONE)
 	sTimerCancel (l_hdlRFID_DetectTimeout);
 

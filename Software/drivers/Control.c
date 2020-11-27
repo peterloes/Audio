@@ -179,6 +179,7 @@ void	ControlInit (void)
 {
 int	i;
 
+
     /* Introduce variable list to configuration data module */
     CfgDataInit (l_CfgVarList, l_EnumList);
 
@@ -223,7 +224,7 @@ int	i;
     {
 	if (AlarmIsEnabled(i))
 	{
-	    if (i >= ALARM_OFF_TIME_1)
+	    if (i >= ALARM_OFF_TIME)
 		ExecuteAlarmAction(i);	// OFF-Time: Switch device off
 
 	    AlarmDisable(i);		// Disable this alarm
@@ -233,7 +234,6 @@ int	i;
     /* Disable RFID functionality */
     g_RFID_Type = RFID_TYPE_NONE;
     g_RFID_Power = PWR_OUT_NONE;
-    l_flgTwiceIDLocked = false;
     
     /* Disable Audio functionality */
     g_AudioPower = PWR_OUT_NONE;
@@ -242,6 +242,23 @@ int	i;
     g_AudioCfg_IM = 0;
     g_AudioCfg_RQ = 0;
     
+    /* Disable Control functionality */
+    l_KeepPlayback = 0;
+    l_KeepRecord = 0;
+    l_PlayType = 0;
+    
+    l_flgAudioPlayRun = false;
+    l_flgAudioPlayStop = false;
+    l_flgAudioRecRun = false;
+    l_flgAudioRecStop = false;
+    
+    l_flgTwiceIDLocked = false;
+    l_flgPlaybackIsRun = false;
+      
+    /* Deactivate timer */
+     if (l_hdlPlayRec != NONE)
+	  sTimerCancel (l_hdlPlayRec);
+      
 }
 
 
@@ -282,12 +299,9 @@ char	 line[120];
 char	*pStr;
 ID_PARM	*pID;
 
-    /*!@brief Current state of of Audio Module is locked from audio.c */
-static volatile bool	 isAudioLocked;
-isAudioLocked  = IsAudioLocked();
 
     pStr = line;
-    if(!isAudioLocked && !l_flgTwiceIDLocked)
+    if(!l_flgTwiceIDLocked)
     {      
     pID = CfgLookupID (transponderID);
     }
@@ -321,9 +335,10 @@ isAudioLocked  = IsAudioLocked();
     {
 	pStr += sprintf (pStr, "Transponder: %s", transponderID);
     }
+    
+    if(!l_flgTwiceIDLocked)
+    {
 
-    if(!isAudioLocked && !l_flgTwiceIDLocked)
-    { 
     /* prepare the associated variables */
     l_KeepPlayback = (pID->KeepPlayback == DUR_INVALID	? l_dfltKeepPlayback
 							: pID->KeepPlayback);
@@ -332,8 +347,8 @@ isAudioLocked  = IsAudioLocked();
     l_PlayType     = (pID->PlayType  == DUR_INVALID	? l_dfltPlayType
 							: pID->PlayType);
   
-       /* append current parameters to ID */
-       pStr += sprintf (pStr, ":%ld", l_KeepPlayback);
+      /* append current parameters to ID */
+      pStr += sprintf (pStr, ":%ld", l_KeepPlayback);
        pStr += sprintf (pStr, ":%ld", l_KeepRecord);
        pStr += sprintf (pStr, ":%ld", l_PlayType);
        
@@ -342,7 +357,7 @@ isAudioLocked  = IsAudioLocked();
     else
     {
        pStr += sprintf (pStr, " - Audio: Is locked"); 
-   }
+    }
 #ifdef LOGGING
      Log(line);
 #endif    
@@ -356,12 +371,9 @@ isAudioLocked  = IsAudioLocked();
                /* be sure to cancel PlayRec timer */
  	   if (l_hdlPlayRec != NONE)
            { 	
-	      if(!isAudioLocked)
-              {
-                 /* start playing */
+	         /* start playing */
 	         PlaybackRun();
                  sTimerStart (l_hdlPlayRec, l_KeepPlayback);
-              }
            }
         }
         else
@@ -372,13 +384,10 @@ isAudioLocked  = IsAudioLocked();
 	    /* it follows a KEEP_RECORD duration */
 	    if (l_KeepRecord > 0)
 	    {
-               if(!isAudioLocked)
-               {
-                   /* start record */
+                  /* start record */
 	           RecordRun(); 
                   /* start KeepRecord timer */
                   sTimerStart (l_hdlPlayRec, l_KeepRecord);
-               }
             }
           }
       }
@@ -397,9 +406,6 @@ static void	PlayRecAction (TIM_HDL hdl)
 {
 (void) hdl;		// suppress compiler warning "unused parameter"
     
-        /*!@brief Current state of of Audio Module is locked from audio.c */
-static volatile bool	 isAudioLocked;
-isAudioLocked  = IsAudioLocked(); 
 
     /* determine current state */
     if (l_flgPlaybackRun)
@@ -425,8 +431,6 @@ isAudioLocked  = IsAudioLocked();
             sTimerStart (l_hdlPlayRec, l_KeepRecord);
         }
         l_flgPlaybackRun = false;
-        l_flgTwiceIDLocked = false;
-	
     }
     else 
     {
@@ -441,8 +445,8 @@ isAudioLocked  = IsAudioLocked();
           * via IsControlRecStop */
          l_flgAudioRecStop = true;
          l_flgAudioRecRun = false;
-         l_flgTwiceIDLocked = false;
     }
+    l_flgTwiceIDLocked = false;
 }
 
 
@@ -620,10 +624,6 @@ int	i;
  *****************************************************************************/
 void	PowerOutput (PWR_OUT output, bool enable)
 {
-  
-    /* No power enable if Power Fail is active */
-//    if (enable  &&  IsPowerFail())
-//       return;
     
     /* Parameter check */
     if (output == PWR_OUT_NONE)
@@ -696,7 +696,7 @@ int	 pwrState;
 		&& alarmNum <= LAST_POWER_ALARM);
 
     /* Determine switching state */
-    pwrState = (alarmNum >= ALARM_OFF_TIME_1 ? PWR_OFF:PWR_ON);
+    pwrState = (alarmNum >= ALARM_OFF_TIME ? PWR_OFF:PWR_ON);
 
     /* RFID reader and Audio module are always switched on or off together */
     if (pwrState == PWR_ON)
@@ -704,13 +704,15 @@ int	 pwrState;
         l_flgAudioRfidPower = true;
         RFIDPower_Enable();
         AudioEnable();
+        g_flgIRQ = true;	// keep on running
     }
     else
     {
        l_flgAudioRfidPower = false;
+       l_flgTwiceIDLocked = false;
        RFID_Disable();
        AudioDisable();
+       g_flgIRQ = true;	// keep on runnin
     }
-
-    g_flgIRQ = true;	// keep on running
+    
 }

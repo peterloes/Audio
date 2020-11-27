@@ -45,12 +45,8 @@ Revision History:
 //@{
     /*! Get or set level of the Log Flush LED */
 #define LOG_FLUSH_LED  IO_Bit(GPIO->P[LOG_FLUSH_LED_PORT].DOUT, LOG_FLUSH_LED_PIN)
-#if KEY_AUTOREPEAT	// ms-Timer is already in use
-  #define LOG_FLASH_LED_DURATION 2	// Duration [s] how long the LED is on
-#else
   #define LOG_FLASH_LED_DELAY	50	// Delay [ms] between toggling the LED
   #define LOG_FLASH_LED_CNT	5	// How often the LED is flashing
-#endif
 //@}
 
 /*========================= Global Data and Routines =========================*/
@@ -585,16 +581,9 @@ static void	logAliveMsg(TIM_HDL hdl)
  * be flushed for the next @ref LOG_FLUSH_PAUSE seconds.  This gives the
  * user the ability to remove the SD-Card in a save way.
  *
- * @note
- * When the millisecond timer is not available, e.g. used for repeated key
- * functionality, the LED is just illuminated for about 2s.
- *
  ******************************************************************************/
 static void	logFlushLED(void)
 {
-#if KEY_AUTOREPEAT	// ms-Timer is already in use
-    LOG_FLUSH_LED = 0;
-#else
     /* Start condition is LED on */
     if (LOG_FLUSH_LED)
     {
@@ -608,5 +597,4 @@ static void	logFlushLED(void)
 
     if (l_LogFlushLED_FlashCnt > 0)
 	msTimerStart(LOG_FLASH_LED_DELAY);
-#endif
 }
