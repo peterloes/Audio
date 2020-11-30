@@ -587,10 +587,10 @@ void	AudioCheck (void)
  *      <i>false</i> if not.
  *
  ******************************************************************************/
-bool	IsAudioLocked ()
-{
-    return l_flgLocked;
-}
+//bool	IsAudioLocked ()
+//{
+ //   return l_flgLocked;
+//}
 
 
 /***************************************************************************//**

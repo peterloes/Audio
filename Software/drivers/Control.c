@@ -355,9 +355,7 @@ ID_PARM	*pID;
     {
        pStr += sprintf (pStr, " - Audio: Is locked"); 
     }
-#ifdef LOGGING
      Log(line);
-#endif    
   
        /* playback or record (may already be done) */
        if (l_KeepPlayback > 0)

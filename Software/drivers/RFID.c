@@ -393,8 +393,6 @@ void RFID_PowerOff (void)
     /* Generate Log Message */
     Log ("RFID is powered off");
 #endif
-    
-   g_flgIRQ = true;	// keep on running
 }
 
 
