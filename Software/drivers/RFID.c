@@ -323,21 +323,13 @@ void RFID_Disable (void)
     {
 	l_flgRFID_On = false;   // mark RFID reader to be powered off
         
-      	/*
-	 * The RFID reader is powered off only if no transponder 
-         * is present, i.e. <g_Transponder> is empty.
-	 */
-        if (g_Transponder[0] == EOS)
-	{
-
-	   /* RFID reader should be powered OFF immediately*/
-	   if (l_flgRFID_IsOn)
-	   {
-	       RFID_PowerOff();
-	       l_flgRFID_IsOn = false;
-	   }
-        }
-    }
+       /* RFID reader should be powered OFF immediately*/
+       if (l_flgRFID_IsOn)
+       {
+          RFID_PowerOff();
+          l_flgRFID_IsOn = false;
+       }
+   }
 }
 
 
@@ -434,16 +426,8 @@ void	RFID_Check (void)
 	/* RFID reader should be powered OFF */
 	if (l_flgRFID_IsOn)
 	{
-	    
-            /*
-	     * The RFID reader is powered off only if no transponder
-             * is present, i.e. <g_Transponder> is empty.
-	     */
-            if (g_Transponder[0] == EOS)
-	    {
-               RFID_PowerOff();
-	       l_flgRFID_IsOn = false;
-            }
+           RFID_PowerOff();
+           l_flgRFID_IsOn = false;
 	}
     }
 

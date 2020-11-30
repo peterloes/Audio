@@ -59,7 +59,7 @@ Revision History:
  * Set to 0 to use the internal RC oscillator, if 1 the external 32MHz XTAL
  * is used.  The frequency of the RC oscillator is 14MHz per default.
  */
-#define USE_EXT_32MHZ_CLOCK	0
+#define USE_EXT_32MHZ_CLOCK	1
 
 /*
  * Configuration for module "AlarmClock"
@@ -134,8 +134,6 @@ void    drvLEUART_puts(const char *str);
 #define DMA_CHAN_LEUART_TX	1	//! LEUART Tx uses DMA channel 1
 //@}
 
-/*!@brief Name of the configuration file. */
-#define CONFIG_FILE_NAME	"CONFIG.TXT"
 
 /*================================== Macros ==================================*/
 
@@ -222,8 +220,8 @@ typedef enum
     ALARM_DCF77_WAKE_UP,    //!< Wake up DCF77 to synchronize the system clock
     ALARM_BATTERY_MON_1,    //!< Time #1 for logging battery status
     ALARM_BATTERY_MON_2,    //!< Time #2 for logging battery status
-    ALARM_ON_TIME,        //!< Time #1 when to switch the system ON
-    ALARM_OFF_TIME,       //!< Time #1 when to switch te system OFF
+    ALARM_ON_TIME_1,        //!< Time #1 when to switch the system ON
+    ALARM_OFF_TIME_1,       //!< Time #1 when to switch te system OFF
     NUM_ALARM_IDS
 } ALARM_ID;
 
@@ -232,9 +230,9 @@ typedef enum
  * Output control, and the number of alarm ON, resp. OFF times.
  */
 //@{
-#define FIRST_POWER_ALARM	ALARM_ON_TIME
-#define LAST_POWER_ALARM	ALARM_OFF_TIME
-#define NUM_POWER_ALARMS	(LAST_POWER_ALARM - ALARM_OFF_TIME + 1)
+#define FIRST_POWER_ALARM	ALARM_ON_TIME_1
+#define LAST_POWER_ALARM	ALARM_OFF_TIME_1
+#define NUM_POWER_ALARMS	(LAST_POWER_ALARM - ALARM_OFF_TIME_1 + 1)
 //@}
 
 /*!@brief Enumeration of the EM1 Modules

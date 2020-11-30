@@ -71,10 +71,10 @@ Revision History:
 #include "em_cmu.h"
 #include "em_usart.h"
 #include "em_emu.h"
+#include "ExtInt.h"
 #include "config.h"		// include project configuration parameters
 #include "AlarmClock.h"
 #include "Audio.h"
-#include "LEUART.h"
 #include "Logging.h"
 #include "Control.h"
 
@@ -264,8 +264,7 @@ void	AudioInit (void)
      /* Check if AUDIO module is already in use */
     if (l_flgAudioActivate)
 	AudioPowerOff();	// power-off and reset audio module and UART
-       l_flgAudioIsOn = false;
-         
+           
         /* Now the AUDIO module isn't active any more */
     l_flgAudioActivate = false;
     
@@ -309,8 +308,6 @@ void	AudioInit (void)
     /* Create timer for a "Communication Watchdog" */
     if (l_hdlWdog == NONE)
 	l_hdlWdog = sTimerCreate (AudioComTimeout);
-    
-    drvLEUART_sync();	// to prevent UART buffer overflow
 }
 
 
@@ -500,6 +497,9 @@ void	AudioCheck (void)
 	{
 	    AudioPowerOn();
 	    l_flgAudioIsOn = true;
+                
+            /* Replay external interrupts to consider new power state */
+            ExtIntReplay();
 	}
     }
     else
@@ -510,6 +510,9 @@ void	AudioCheck (void)
 	    AudioPowerOff();
 	    l_flgAudioIsOn = false;
             l_flgSingleAction = false;
+            
+             /* Replay external interrupts to consider new power state */
+             ExtIntReplay();
    	}
     }   
 
@@ -1383,7 +1386,6 @@ static void CheckAudioData(void)
                  {
                     Log ("Audio: MicroSD card or USB flash removed");
                  }
-                 drvLEUART_sync();	// to prevent UART buffer overflow
                  l_CheckData = 0;
                  l_flgComCompleted = true;
               }

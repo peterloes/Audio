@@ -58,7 +58,7 @@ Revision History:
      * of the buffer is less than this value.
      */
 #ifndef LOG_ENTRY_MAX_SIZE
-    #define LOG_ENTRY_MAX_SIZE	120
+    #define LOG_ENTRY_MAX_SIZE	100
 #endif
 
     /*!@brief Use this define to specify a function to be called for monitoring

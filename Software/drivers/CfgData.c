@@ -421,8 +421,8 @@ const char **ppEnumName;
 	    }
 
             /* set alarm time and enable it */
-	    AlarmSet (ALARM_ON_TIME + varIdx, hour, minute);
-	    AlarmEnable (ALARM_ON_TIME + varIdx);
+	    AlarmSet (ALARM_ON_TIME_1 + varIdx, hour, minute);
+	    AlarmEnable (ALARM_ON_TIME_1 + varIdx);
 	    break;
 
 
@@ -699,7 +699,7 @@ ID_PARM	*pID;
     }
 
     /* transponder IDs must be read from the CONFIG file for comparison */
-    return CfgReadFindID (CONFIG_FILE_NAME, transponderID);
+    return CfgReadFindID ("CONFIG.TXT", transponderID);
 }
 
 

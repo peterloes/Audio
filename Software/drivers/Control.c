@@ -30,8 +30,6 @@ Revision History:
 #include "em_cmu.h"
 #include "em_int.h"
 #include "em_gpio.h"
-#include "ExtInt.h"
-#include "LEUART.h"
 #include "Logging.h"
 #include "LightBarrier.h"
 #include "AlarmClock.h"
@@ -39,7 +37,6 @@ Revision History:
 #include "Audio.h"
 #include "CfgData.h"
 #include "Control.h"
-#include "PowerFail.h"
 
 
 /*=============================== Definitions ================================*/
@@ -224,7 +221,7 @@ int	i;
     {
 	if (AlarmIsEnabled(i))
 	{
-	    if (i >= ALARM_OFF_TIME)
+	    if (i >= ALARM_OFF_TIME_1)
 		ExecuteAlarmAction(i);	// OFF-Time: Switch device off
 
 	    AlarmDisable(i);		// Disable this alarm
@@ -696,7 +693,7 @@ int	 pwrState;
 		&& alarmNum <= LAST_POWER_ALARM);
 
     /* Determine switching state */
-    pwrState = (alarmNum >= ALARM_OFF_TIME ? PWR_OFF:PWR_ON);
+    pwrState = (alarmNum >= ALARM_OFF_TIME_1 ? PWR_OFF:PWR_ON);
 
     /* RFID reader and Audio module are always switched on or off together */
     if (pwrState == PWR_ON)
@@ -704,7 +701,6 @@ int	 pwrState;
         l_flgAudioRfidPower = true;
         RFIDPower_Enable();
         AudioEnable();
-        g_flgIRQ = true;	// keep on running
     }
     else
     {
@@ -712,7 +708,6 @@ int	 pwrState;
        l_flgTwiceIDLocked = false;
        RFID_Disable();
        AudioDisable();
-       g_flgIRQ = true;	// keep on runnin
     }
-    
+    g_flgIRQ = true;	// keep on running
 }
