@@ -304,12 +304,18 @@ ID_PARM	*pID;
     }
     if (pID == NULL)
     {
-	/* specified ID not found, look for an "ANY" entry */
+	if(!l_flgTwiceIDLocked)
+        {
+        /* specified ID not found, look for an "ANY" entry */
 	pID = CfgLookupID ("ANY");
+        }
 	if (pID == NULL)
 	{
-	    /* no "ANY" entry defined, treat ID as "UNKNOWN" */
+	    if(!l_flgTwiceIDLocked)
+            {
+            /* no "ANY" entry defined, treat ID as "UNKNOWN" */
 	    pID = CfgLookupID ("UNKNOWN");
+            }
 	    if (pID == NULL)
 	    {
 		/* even no "UNKNOWN" entry exists - abort */
@@ -318,15 +324,26 @@ ID_PARM	*pID;
 	    }
 	    else
 	    {
-		pStr += sprintf (pStr, "Transponder: %s not found -"
-				 " using UNKNOWN", transponderID);
+		if(!l_flgTwiceIDLocked)
+                { 
+                 pStr += sprintf (pStr, "Transponder: %s not found -"
+				 " using UNKNOWN", transponderID); 
+                }
 	    }
+    
 	}
 	else
 	{
-	    pStr += sprintf (pStr, "Transponder: %s not found -"
-			     " using ANY", transponderID);
-	}
+	   if(!l_flgTwiceIDLocked)
+           {  
+           pStr += sprintf (pStr, "Transponder: %s not found -"
+			     " using ANY", transponderID);	   
+           }
+           else
+           {
+             l_flgTwiceIDLocked = true;
+           }
+        }
     }
     else
     {
@@ -346,8 +363,8 @@ ID_PARM	*pID;
   
       /* append current parameters to ID */
       pStr += sprintf (pStr, ":%ld", l_KeepPlayback);
-       pStr += sprintf (pStr, ":%ld", l_KeepRecord);
-       pStr += sprintf (pStr, ":%ld", l_PlayType);
+      pStr += sprintf (pStr, ":%ld", l_KeepRecord);
+      pStr += sprintf (pStr, ":%ld", l_PlayType);
        
        l_flgTwiceIDLocked = true;
     }
@@ -379,7 +396,8 @@ ID_PARM	*pID;
 	    /* it follows a KEEP_RECORD duration */
 	    if (l_KeepRecord > 0)
 	    {
-                  /* start record */
+                  l_flgTwiceIDLocked = true; 
+                 /* start record */
 	           RecordRun(); 
                   /* start KeepRecord timer */
                   sTimerStart (l_hdlPlayRec, l_KeepRecord);
@@ -420,7 +438,8 @@ static void	PlayRecAction (TIM_HDL hdl)
         /* it follows a KEEP_RECORD duration */
 	if (l_KeepRecord > 0)
 	{
-           /* start record */
+            l_flgTwiceIDLocked = true;
+            /* start record */
 	    RecordRun();
             /* start KeepRecord timer */
             sTimerStart (l_hdlPlayRec, l_KeepRecord);
