@@ -1,7 +1,5 @@
 ﻿# Audio
  designed with MOMO 
- 
-Firmware working process not finished.
 
 Firmware not reviewed. 
 
