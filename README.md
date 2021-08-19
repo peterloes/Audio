@@ -1,8 +1,8 @@
 ﻿# Audio
  designed with MOMO 
+ 
+Author: Loës P. (2021) [![DOI](https://zenodo.org/badge/261459340.svg)](https://zenodo.org/badge/latestdoi/261459340)
 
-
-[![DOI](https://zenodo.org/badge/261459340.svg)](https://zenodo.org/badge/latestdoi/261459340)
 Firmware not reviewed. 
 
 Platform for Animal Observation and Manipulation
