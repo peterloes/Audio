@@ -5,7 +5,7 @@ Authors: Loës P., Kempenaers B.(2020) [![DOI](https://zenodo.org/badge/26145934
 
 Firmware not reviewed. 
 
-Platform for Animal Observation and Manipulation
+Platform for animal observation and manipulation.
 
 Supported:
 - FN-RM01 MP3/WAV Audio Recorder and Player Module (Website: www.flyrontech.com)
