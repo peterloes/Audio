@@ -66,8 +66,9 @@ mailto: info@top-print.eu
 https://www.leiterplatten-muenchen.de/
 
 
+
 RFID reader
-Nanomodule Multi 125LV A/1.11 (T3NM-LV) Art.Nr. ART10413 //Short Range
+Nanomodule Multi 125LV A/1.11 (T3NM-LV) 125kHz +/-0,5% Art.Nr. ART10413
 ANT002 Rundspule 47mm, 490µH Art.Nr. ART 10668
 
 Elatec GmbH
@@ -94,7 +95,6 @@ t: +49 (0) 2265 9919-14  |  m: +49 (0) 173 5688184
 Gewerbeparkstr. 10, 51580 Reichshof-Wehnrath, Germany
 
 Internet: https://www.averydennison.com/en/home.html
-
 
 
 
